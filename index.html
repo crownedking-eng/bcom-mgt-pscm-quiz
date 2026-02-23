@@ -114,10 +114,10 @@
             </select>
 
             <button class="btn btn-outline" onclick="app.init('practice')">
-                <b>Practice Mode</b><br><small>10 Qs • 10 Mins • Instant Feedback</small>
+                <b>Practice Mode</b><br><small>20 Qs • 25 Mins • Instant Feedback</small>
             </button>
             <button class="btn btn-primary" onclick="app.init('exam')">
-                <b>Exam Mode</b><br><small>20 Qs • 30 Mins • Hidden Feedback</small>
+                <b>Exam Mode</b><br><small>20 Qs • 25 Mins • Hidden Feedback</small>
             </button>
         </div>
     </section>
@@ -3993,17 +3993,17 @@ const app = {
             return;
         }
         
-        // For practice mode: randomize and take 10 questions
+        // For practice mode: randomize and take 20 questions
         // For exam mode: take 20 questions in sequence or randomize if "all years"
         if (mode === 'practice') {
-            // Shuffle and take 10
+            // Shuffle and take 20
             allQuestions = this.shuffle(allQuestions);
             // Remove duplicates if mixing years
             if (this.selectedYear === 'all') {
                 allQuestions = this.removeDuplicates(allQuestions);
             }
-            this.currentPool = allQuestions.slice(0, Math.min(10, allQuestions.length));
-            this.timeRemaining = 10 * 60;
+            this.currentPool = allQuestions.slice(0, Math.min(20, allQuestions.length));
+            this.timeRemaining = 25 * 60;
         } else {
             // Exam mode
             if (this.selectedYear === 'all') {
@@ -4014,7 +4014,7 @@ const app = {
             }
             // Take 20 questions
             this.currentPool = allQuestions.slice(0, Math.min(20, allQuestions.length));
-            this.timeRemaining = 30 * 60;
+            this.timeRemaining = 25 * 60;
         }
         
         this.answers = new Array(this.currentPool.length).fill(null);
