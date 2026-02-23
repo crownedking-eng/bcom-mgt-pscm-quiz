@@ -1,0 +1,4030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCOM UCC Quiz Pro</title>
+    <style>
+        :root {
+            --primary: #2c3e50; --accent: #e67e22; --bg: #fdfdfd;
+            --card-bg: #ffffff; --text: #333333; --success: #27ae60;
+            --error: #c0392b; --border: #ecf0f1; --shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        body.dark-mode {
+            --primary: #3498db; --accent: #f39c12; --bg: #1a1a1a;
+            --card-bg: #2d2d2d; --text: #e0e0e0; --success: #2ecc71;
+            --error: #e74c3c; --border: #444; --shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); line-height: 1.6; transition: background-color 0.3s, color 0.3s; }
+        .header { background: var(--primary); color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow); }
+        .header-controls { display: flex; align-items: center; gap: 1rem; }
+        .dark-mode-toggle { background: rgba(255,255,255,0.2); border: none; color: white; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: 0.2s; }
+        .dark-mode-toggle:hover { background: rgba(255,255,255,0.3); }
+        .back-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: 0.2s; }
+        .back-btn:hover { background: rgba(255,255,255,0.3); }
+        .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        .view { display: none; }
+        .view.active { display: block; animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 2rem; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 1.5rem; transition: background-color 0.3s, border-color 0.3s; }
+        .dashboard-card { background: var(--card-bg); border-radius: 12px; padding: 2rem; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 1.5rem; transition: all 0.3s; cursor: pointer; }
+        .dashboard-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); border-color: var(--accent); }
+        .dashboard-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .btn { padding: 1rem 1.5rem; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; width: 100%; margin-top: 1rem; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: var(--primary); color: white; }
+        .btn-danger { background: var(--error); color: white; }
+        .btn-danger:hover { opacity: 0.9; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { opacity: 0.9; }
+        .btn-group { display: flex; gap: 1rem; }
+        .btn-group .btn { flex: 1; }
+        .option-btn { display: block; width: 100%; text-align: left; padding: 1rem; margin: 0.5rem 0; border: 2px solid var(--border); border-radius: 8px; background: var(--card-bg); cursor: pointer; font-size: 1rem; transition: 0.2s; color: var(--text); }
+        .option-btn:hover { background: var(--border); }
+        .option-btn.selected { border-color: var(--primary); background: #eef4fa; }
+        body.dark-mode .option-btn.selected { background: #1e3a5f; }
+        .option-btn.correct { border-color: var(--success); background: #d4edda; }
+        body.dark-mode .option-btn.correct { background: #1e4d2b; }
+        .option-btn.wrong { border-color: var(--error); background: #f8d7da; }
+        body.dark-mode .option-btn.wrong { background: #5a1f1f; }
+        .option-btn.review-correct { border-color: var(--success); border-width: 3px; }
+        .option-btn.review-wrong { border-color: var(--error); border-width: 3px; }
+        .timer { font-weight: bold; font-size: 1.2rem; color: var(--accent); }
+        .feedback { margin-top: 1rem; padding: 1rem; border-radius: 8px; border-left: 5px solid var(--primary); background: var(--border); }
+        .hidden { display: none; }
+        select { width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 1rem; background: var(--card-bg); color: var(--text); }
+        .review-item { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+        .review-item:last-child { border-bottom: none; }
+        .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .review-status { font-weight: bold; padding: 0.3rem 0.8rem; border-radius: 6px; }
+        .review-status.correct { background: var(--success); color: white; }
+        .review-status.incorrect { background: var(--error); color: white; }
+        .quit-btn { position: fixed; bottom: 2rem; right: 2rem; padding: 0.8rem 1.5rem; background: var(--error); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 999; }
+        .quit-btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div style="font-size: 1.2rem; font-weight: bold;">
+        <span id="header-title">BCOM UCC Quiz Pro</span>
+    </div>
+    <div class="header-controls">
+        <button id="back-btn" class="back-btn hidden" onclick="app.goToDashboard()">← Back to Dashboard</button>
+        <div id="timer-display" class="timer"></div>
+        <button class="dark-mode-toggle" onclick="app.toggleDarkMode()">🌓 Dark Mode</button>
+    </div>
+</header>
+
+<div class="container">
+    <!-- DASHBOARD VIEW -->
+    <section id="dashboard-view" class="view active">
+        <div class="card" style="text-align: center;">
+            <h1 style="margin-bottom: 0.5rem; font-size: 2.5rem;">BCOM UCC Quiz Pro</h1>
+            <p style="color: #666; margin-bottom: 2rem;">Select a subject to begin</p>
+        </div>
+
+        <div class="dashboard-card" onclick="app.selectSubject('entrepreneurship')">
+            <div class="dashboard-icon">💡</div>
+            <h2 style="margin-bottom: 0.5rem;">Entrepreneurship</h2>
+            <p style="color: #666;">2019 - 2025 Past Questions</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent);">Practice & Exam Modes Available</p>
+        </div>
+
+        <div class="dashboard-card" onclick="app.selectSubject('project-management')">
+            <div class="dashboard-icon">📊</div>
+            <h2 style="margin-bottom: 0.5rem;">Project Management</h2>
+            <p style="color: #666;">Comprehensive Question Bank</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent);">Practice & Exam Modes Available</p>
+        </div>
+    </section>
+
+    <!-- MENU VIEW -->
+    <section id="menu-view" class="view">
+        <div class="card" style="text-align: center;">
+            <h1 style="margin-bottom: 0.5rem;" id="subject-title"></h1>
+            <p style="color: #666; margin-bottom: 2rem;" id="subject-subtitle"></p>
+            
+            <label style="display:block; text-align:left; margin-bottom:0.5rem; font-weight:bold;">Filter by Year (Optional):</label>
+            <select id="year-select">
+                <option value="all">All Years (Mixed)</option>
+            </select>
+
+            <button class="btn btn-outline" onclick="app.init('practice')">
+                <b>Practice Mode</b><br><small>10 Qs • 10 Mins • Instant Feedback</small>
+            </button>
+            <button class="btn btn-primary" onclick="app.init('exam')">
+                <b>Exam Mode</b><br><small>20 Qs • 30 Mins • Hidden Feedback</small>
+            </button>
+        </div>
+    </section>
+
+    <!-- QUIZ VIEW -->
+    <section id="quiz-view" class="view">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 0.9rem;">
+            <span id="progress-text"></span>
+            <span id="year-tag" style="background: var(--accent); color: white; padding: 2px 8px; border-radius: 4px;"></span>
+        </div>
+        <div class="card">
+            <p id="question-text" style="font-size: 1.1rem; font-weight: 500;"></p>
+        </div>
+        <div id="options-container"></div>
+        <div id="feedback-box" class="feedback hidden">
+            <strong id="feedback-status"></strong>
+            <p id="feedback-why" style="margin-top: 0.5rem;"></p>
+            <small id="feedback-ref" style="display: block; margin-top: 0.5rem; color: #666; font-style: italic;"></small>
+        </div>
+        <button id="action-btn" class="btn btn-primary" onclick="app.handleAction()">Next Question</button>
+        <button id="quit-btn" class="quit-btn" onclick="app.confirmQuit()">Quit Quiz</button>
+    </section>
+
+    <!-- RESULTS VIEW -->
+    <section id="results-view" class="view">
+        <div class="card" style="text-align: center;">
+            <h2>Assessment Complete</h2>
+            <div id="final-score" style="font-size: 4rem; font-weight: bold; margin: 1rem 0; color: var(--primary);"></div>
+            <p id="final-comment" style="margin-bottom: 1rem;"></p>
+            <div class="btn-group">
+                <button class="btn btn-outline" onclick="app.goToDashboard()">Back to Dashboard</button>
+                <button class="btn btn-primary" onclick="app.showReview()">Review Answers</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- REVIEW VIEW -->
+    <section id="review-view" class="view">
+        <div class="card" style="text-align: center;">
+            <h2>Answer Review</h2>
+            <div style="display: flex; justify-content: space-around; margin: 1.5rem 0; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--primary);" id="review-score"></div>
+                    <small>Final Score</small>
+                </div>
+                <div>
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--success);" id="review-correct"></div>
+                    <small>Correct</small>
+                </div>
+                <div>
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--error);" id="review-incorrect"></div>
+                    <small>Incorrect</small>
+                </div>
+            </div>
+        </div>
+        <div id="review-container"></div>
+        <button class="btn btn-primary" onclick="app.goToDashboard()">Back to Dashboard</button>
+    </section>
+</div>
+
+<script>
+const entrepreneurshipQuestions = {
+  "Semester I Quiz I, 2019/2020": [
+    {
+      "question": "An entrepreneur who starts a new business after abandoning a previous business is called ______.",
+      "options": [
+        "opportunistic entrepreneur",
+        "nascent entrepreneur",
+        "serial entrepreneur",
+        "novice entrepreneur"
+      ],
+      "correctAnswer": "C",
+      "why": "A serial entrepreneur repeatedly starts new ventures after leaving previous ones. Nascent entrepreneurs are beginners, and novice entrepreneurs lack experience.",
+      "reference": "Unit 1, Session 2 - Types of Entrepreneurs",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Which of the following is not a benefit of starting a small business?",
+      "options": [
+        "Exercise of personal control",
+        "Less funds required",
+        "Lack of continuity after owner dies",
+        "Owner enjoys profit alone"
+      ],
+      "correctAnswer": "C",
+      "why": "Benefits include independence, lower capital, and keeping profits. Lack of continuity is a disadvantage, not a benefit.",
+      "reference": "Unit 1, Session 4 - Advantages and Disadvantages of Small Business",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Entrepreneurs contribute to national development in the following way except ______.",
+      "options": [
+        "employment creation",
+        "evasion of taxes",
+        "capital formation",
+        "innovation"
+      ],
+      "correctAnswer": "B",
+      "why": "Entrepreneurs promote employment, innovation, and capital formation. Tax evasion harms development, so it is not a contribution.",
+      "reference": "Unit 1, Session 1 - Role of Entrepreneurship in Economic Development",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "The characteristics within an individual that causes him to behave in a consistent way overtime is referred to as ______.",
+      "options": [
+        "attitude",
+        "personality",
+        "values",
+        "perception"
+      ],
+      "correctAnswer": "B",
+      "why": "Personality represents stable traits that influence consistent behaviour over time, unlike attitudes or perceptions which change more easily.",
+      "reference": "Unit 1, Session 2 - Entrepreneurial Characteristics",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "The process of setting up your own business starts with ______.",
+      "options": [
+        "acquisition of resources",
+        "leading and directing the organisation",
+        "identification of opportunity",
+        "managing people"
+      ],
+      "correctAnswer": "C",
+      "why": "Entrepreneurship begins with spotting a business opportunity before resources, people, or management are considered.",
+      "reference": "Unit 1, Session 2 - The Entrepreneurial Process",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "The factors that affect the entrepreneurship process include the following except ______.",
+      "options": [
+        "psychological factors",
+        "situational factors",
+        "sociological factors",
+        "cultural factors"
+      ],
+      "correctAnswer": "D",
+      "why": "The approaches that are used to examine the entrepreneurial process are the psychological, sociological and situational approaches. ",
+      "reference": "Unit 1, Session 3 - Factors that Influence the Entrepreneurial Process",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Which of the following is not a psychological factor that is believed to affect an individual's decision of becoming an entrepreneur?",
+      "options": [
+        "Locus of control",
+        "Need for achievement",
+        "Negative displacement",
+        "Personality characteristics"
+      ],
+      "correctAnswer": "C",
+      "why": "Locus of control, need for achievement and personality are psychological. Negative displacement is sociological, not psychological.",
+      "reference": "Unit 1, Session 3 - Psychological and Sociological Influences",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Businesses with more than ten (10) employees, according to Ghana Statistical Services, are classified as ______.",
+      "options": [
+        "micro businesses",
+        "small businesses",
+        "small and medium businesses",
+        "medium and large businesses"
+      ],
+      "correctAnswer": "B",
+      "why": "GSS classifies firms with more than 10 employees as small businesses, not micro.",
+      "reference": "Unit 1, Session 5 - Classification of Small Businesses in Ghana",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Focus groups are ______.",
+      "options": [
+        "political debates",
+        "groups who meet to discuss and generate new ideas",
+        "awareness training groups",
+        "workshop sessions for individuals"
+      ],
+      "correctAnswer": "B",
+      "why": "Focus groups are idea-generation groups used for brainstorming and creativity in venture creation.",
+      "reference": "Unit 2, Session 2 - Sources and Techniques for Business Ideas",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "The following are some reasons why small businesses fail at start up except ______.",
+      "options": [
+        "poor market timing",
+        "lack of distribution channels",
+        "clear business idea",
+        "lack of technical and managerial skills"
+      ],
+      "correctAnswer": "C",
+      "why": "A clear idea helps success. Poor timing, weak skills, and lack of distribution cause failure.",
+      "reference": "Unit 2, Session 4 - Causes of New Venture Failure",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Which of the following is not an approach for evaluating new ventures?",
+      "options": [
+        "Analysis of financial feasibility",
+        "Determining the technical feasibility of idea",
+        "Analysis of organisational resources and capabilities",
+        "Systems analysis"
+      ],
+      "correctAnswer": "D",
+      "why": "Evaluation focuses on financial, technical, and organisational feasibility. Systems analysis is not used here.",
+      "reference": "Unit 2, Session 3 - Evaluating New Venture Opportunities",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "In preparing to buy a new business, it is necessary to conduct a self-audit before the decision is launched. The purpose of the self-audit is to ______.",
+      "options": [
+        "determine your strengths and weaknesses and the ideal business that matches the strengths",
+        "determine opportunities and threats in the business environment",
+        "evaluate the performance of the potential business",
+        "knock on the doors of the potential businesses"
+      ],
+      "correctAnswer": "A",
+      "why": "Self-audit focuses on you, not the environment or the target firm.",
+      "reference": "Unit 2, Session 5 - Buying an Existing Business",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Advantages of buying existing businesses include the following except ______.",
+      "options": [
+        "poor goodwill",
+        "overcoming barriers to entry",
+        "existing track record",
+        "insider knowledge"
+      ],
+      "correctAnswer": "A",
+      "why": "Buying a business gives goodwill, track record and easier entry. Poor goodwill is a disadvantage.",
+      "reference": "Unit 2, Session 5 - Advantages and Disadvantages of Buying a Business",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "The business arrangement where one party grants the other the right and license to use its trade name as well as business processes is referred to as ______.",
+      "options": [
+        "joint venture",
+        "strategic alliance",
+        "franchising",
+        "partnership"
+      ],
+      "correctAnswer": "C",
+      "why": "Franchising allows use of brand name, systems and processes for a fee.",
+      "reference": "Unit 2, Session 6 - Meaning and Nature of Franchising",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "The type of franchising, where franchisees are granted the license to sell specific products under the manufacturer's brand and trade name through selected distribution channels is known as ______.",
+      "options": [
+        "pure franchising",
+        "product distribution franchising",
+        "trade name franchising",
+        "copyright franchising"
+      ],
+      "correctAnswer": "B",
+      "why": "It focuses on selling branded products, not full business format.",
+      "reference": "Unit 2, Session 6 - Types of Franchising",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "A part of a business plan that is the last to be written but it is always placed at the beginning of the plan is the ______.",
+      "options": [
+        "marketing plan",
+        "production plan",
+        "executive summary",
+        "appendices"
+      ],
+      "correctAnswer": "C",
+      "why": "It summarizes the whole plan, so it is written last but placed first.",
+      "reference": "Unit 3, Session 2 - Structure of the Business Plan",
+      "academicYear": "Semester I Quiz I, 2019/2020"
+    }
+  ],
+  "Semester I Quiz I, 2020/2021": [
+    {
+      "question": "Entrepreneurship can best be described as ______.",
+      "options": [
+        "a process that requires setting up a business",
+        "taking a significant risk in a business context",
+        "a process involving innovation, new products or services, and value creation",
+        "All of the above"
+      ],
+      "correctAnswer": "D",
+      "why": "Entrepreneurship involves creating a business, taking calculated risks, and introducing innovation and value creation. All the options describe parts of entrepreneurship.",
+      "reference": "Unit 1, Session 1 - Meaning and Nature of Entrepreneurship",
+      "academicYear": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "If Kojo starts a new service station, it is an example of a/an ______.",
+      "options": [
+        "new concept/new business",
+        "existing concept/new business",
+        "existing concept/existing business",
+        "new concept/existing business"
+      ],
+      "correctAnswer": "B",
+      "why": "A service station already exists as a concept, but Kojo is starting a new business.",
+      "reference": "Unit 1, Session 1 - Types of Entrepreneurial Ventures",
+      "academicYear": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "The first person who introduced the term \u201centrepreneur is ______.",
+      "options": [
+        "Adam Smith",
+        "Peter F. Drucker",
+        "Richard Cantillon",
+        "Joseph Shumpeter"
+      ],
+      "correctAnswer": "C",
+      "why": "Cantillon was the first to formally use the term entrepreneur to describe a risk bearer.",
+      "reference": "Unit 1, Session 1 - Historical Development of Entrepreneurship",
+      "academicYear": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "______ entrepreneurship is defined as entrepreneurial actions undertaken by individuals living in poverty, and as such, concerned about their survival.",
+      "options": [
+        "Small Business",
+        "Social",
+        "Subsistence",
+        "Scalable Start-up"
+      ],
+      "correctAnswer": "C",
+      "why": "Subsistence entrepreneurship focuses on survival rather than growth or innovation.",
+      "reference": "Unit 1, Session 2 - Types of Entrepreneurship",
+      "academicYear": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "______ entrepreneurship is an approach by individuals, groups, start-up companies or entrepreneurs, in which they develop, fund and implement solutions to social, cultural, or environmental issues.",
+      "options": [
+        "High Growth",
+        "Corporate",
+        "Subsistence",
+        "Social"
+      ],
+      "correctAnswer": "D",
+      "why": "Social entrepreneurship focuses on solving social, cultural, and environmental problems using business methods.",
+      "reference": "Unit 1, Session 2 - Social Entrepreneurship",
+      "academicYear": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "The characteristics of an individual that causes consistent patterns in that individual\u2019s behavior over time is referred to as entrepreneurial ______.",
+      "options": [
+        "attribute",
+        "attitude",
+        "mentality",
+        "personality"
+      ],
+      "correctAnswer": "D",
+      "why": "Personality reflects stable behavioural patterns over time.",
+      "reference": "Unit 1, Session 2 - Entrepreneurial Personality",
+      "academicYear": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Entrepreneurs would be best described as risk ______.",
+      "options": [
+        "averse",
+        "rewarders",
+        "takers",
+        "lovers"
+      ],
+      "correctAnswer": "C",
+      "why": "Entrepreneurs accept calculated risks to pursue opportunities.",
+      "reference": "Unit 1, Session 2 - Risk Bearing in Entrepreneurship",
+      "academicYear": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "The following are ways to avoid pitfalls of small business failure except ______.",
+      "options": [
+        "maintain a positive attitude",
+        "set your business along with the competition",
+        "know your business depth",
+        "understand Financial Statement"
+      ],
+      "correctAnswer": "B",
+      "why": "You should differentiate, not blindly follow competitors. The others help reduce failure.",
+      "reference": "Unit 2, Session 4 - Avoiding Small Business Failure",
+      "academicYear": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "An individual who actively engages in creating a new venture either alone or with someone and is expected to be the owner or part owner of this start-up is a ______ entrepreneur.",
+      "options": [
+        "serial",
+        "nascent",
+        "novice",
+        "portfolio"
+      ],
+      "correctAnswer": "B",
+      "why": "A nascent entrepreneur is currently in the process of starting a business.",
+      "reference": "Unit 1, Session 2 - Types of Entrepreneurs",
+      "academicYear": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "An entrepreneur who has internal locus of control ______.",
+      "options": [
+        "has a high need for achievement",
+        "feels comfortable in an unstructured",
+        "believes that success depends on his/her own actions",
+        "believes fate is a powerful force"
+      ],
+      "correctAnswer": "C",
+      "why": "Internal locus of control means believing outcomes are controlled by personal effort, not luck.",
+      "reference": "Unit 1, Session 2 - Psychological Characteristics of Entrepreneurs",
+      "academicYear": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "An entrepreneur who owns more than one business at a time is called ______.",
+      "options": [
+        "An intrapreneur",
+        "A corporate entrepreneur",
+        "A portfolio entrepreneur",
+        "None of the above"
+      ],
+      "correctAnswer": "C",
+      "why": "A portfolio entrepreneur manages several businesses simultaneously.",
+      "reference": "Unit 1, Session 2 - Portfolio Entrepreneurs",
+      "academicYear": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Mr. Agunde's belief in his capability to perform a task successfully is known as ______.",
+      "options": [
+        "self-recognition, beliefs, and values",
+        "beliefs and values",
+        "Self-determination",
+        "self-efficacy"
+      ],
+      "correctAnswer": "D",
+      "why": "Self-efficacy is confidence in one's ability to perform tasks successfully.",
+      "reference": "Unit 1, Session 2 - Entrepreneurial Self-Efficacy",
+      "academicYear": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which of these statements is true about entrepreneurship?",
+      "options": [
+        "Entrepreneurship = Artistic and Creativity",
+        "Entrepreneurship = Creativity and Smart",
+        "Entrepreneurship = Innovation and Creativity",
+        "Entrepreneurship = Creativity and Talent"
+      ],
+      "correctAnswer": "C",
+      "why": "Entrepreneurship combines creativity with innovation to create value.",
+      "reference": "Unit 1, Session 3 - Creativity and Innovation in Entrepreneurship",
+      "academicYear": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Creation, a type of creative behavior entails ______.",
+      "options": [
+        "an act of joining two previously unrelated things",
+        "inventing something from the scratch",
+        "modifying an existing product or service",
+        "identifying and evaluating various product alternatives"
+      ],
+      "correctAnswer": "B",
+      "why": "Creation refers to producing something entirely new, not modifying or combining.",
+      "reference": "Unit 1, Session 3 - Types of Creative Behaviour",
+      "academicYear": "Semester I Quiz I, 2020/2021"
+    }
+  ],
+  "Semester II Quiz I, 2020/2021": [
+    {
+      "question": "An entrepreneur is a person driven by certain forces which include the need for achievement and to escape authority of others. This definition was given by ______.",
+      "options": [
+        "Economist",
+        "Scientist",
+        "Businessmen",
+        "Psychologist"
+      ],
+      "correctAnswer": "D",
+      "why": "Psychologists explain entrepreneurship using motivation, need for achievement, and independence.",
+      "reference": "Unit 1, Session 2 - Psychological Approach to Entrepreneurship",
+      "academicYear": "Semester II Quiz I, 2020/2021"
+    },
+    {
+      "question": "Joe is resourceful, quick thinker, and his level of restlessness makes him move from one business to another. Joe could be referred to as ______ entrepreneur.",
+      "options": [
+        "Craft",
+        "Opportunist",
+        "Serial",
+        "Portfolio"
+      ],
+      "correctAnswer": "C",
+      "why": "A serial entrepreneur starts, leaves, and starts new businesses repeatedly.",
+      "reference": "Unit 1, Session 2 - Serial Entrepreneurs",
+      "academicYear": "Semester II Quiz I, 2020/2021"
+    },
+    {
+      "question": "Three reasons why people become entrepreneurs are as follows, except ______.",
+      "options": [
+        "Be their own boss",
+        "Pursue their own ideas",
+        "Manage other people",
+        "Realise financial rewards"
+      ],
+      "correctAnswer": "C",
+      "why": "People become entrepreneurs for independence, ideas, and wealth, not mainly to manage others.",
+      "reference": "Unit 2, Session 1 - Why People Start Businesses",
+      "academicYear": "Semester II Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which of the following is not a characteristic of a successful entrepreneur?",
+      "options": [
+        "Head for business",
+        "Passion for their Business",
+        "They are professionals",
+        "They are risk averse"
+      ],
+      "correctAnswer": "D",
+      "why": "Entrepreneurs are risk takers, not risk avoiders.",
+      "reference": "Unit 1, Session 2 - Characteristics of Successful Entrepreneurs",
+      "academicYear": "Semester II Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which of the following is not a personality characteristic of entrepreneurs?",
+      "options": [
+        "Locus of control",
+        "Risk taking",
+        "Positive push",
+        "Need for Achievement"
+      ],
+      "correctAnswer": "C",
+      "why": "Positive push is a sociological influence, not a personality trait.",
+      "reference": "Unit 1, Session 3 - Personality vs Sociological Factors",
+      "academicYear": "Semester II Quiz I, 2020/2021"
+    },
+    {
+      "question": "Mr. Oheneoba Gyebi\u2026 developed the impetus and momentum for entrepreneurship based on the education and the knowledge acquired\u2026 Which sociological approach to entrepreneurship is this?",
+      "options": [
+        "Positive pull",
+        "Positive push",
+        "Negative displacement",
+        "Between things"
+      ],
+      "correctAnswer": "B",
+      "why": "Education and skills that push someone into entrepreneurship are called positive push factors.",
+      "reference": "Unit 1, Session 3 - Sociological Approaches to Entrepreneurship",
+      "academicYear": "Semester II Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which of the entrepreneurship environment is affected by the taste and preferences of consumers?",
+      "options": [
+        "Socio-cultural Environment",
+        "Competitive Environment",
+        "Political environment",
+        "Technological environment"
+      ],
+      "correctAnswer": "A",
+      "why": "Consumer tastes, beliefs, and lifestyles belong to the socio-cultural environment.",
+      "reference": "Unit 1, Session 4 - External Environment of Entrepreneurship",
+      "academicYear": "Semester II Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which of the following is not part of the reasons for starting your own business as outlined by Birley and Westhead (1994)?",
+      "options": [
+        "The need for approval",
+        "Perception of wealth",
+        "The need for personal development",
+        "The need for dependence"
+      ],
+      "correctAnswer": "D",
+      "why": "Entrepreneurs seek independence, not dependence.",
+      "reference": "Unit 2, Session 1 - Motives for Business Start-ups",
+      "academicYear": "Semester II Quiz I, 2020/2021"
+    },
+    {
+      "question": "If a business starts with no backlog of problems, the business is said to have a ______.",
+      "options": [
+        "goodwill",
+        "ill will",
+        "track record",
+        "clean sheet"
+      ],
+      "correctAnswer": "D",
+      "why": "A new business with no past liabilities starts on a clean sheet.",
+      "reference": "Unit 2, Session 5 - Buying an Existing Business",
+      "academicYear": "Semester II Quiz I, 2020/2021"
+    },
+    {
+      "question": "According to Hisrich and Peters, which of the following is the largest source for new business idea?",
+      "options": [
+        "Research and development",
+        "Government agencies",
+        "Consumers",
+        "Existing Companies"
+      ],
+      "correctAnswer": "C",
+      "why": "Hisrich & Peters identify consumers as the largest source of new venture ideas.",
+      "reference": "Unit 2, Session 2 - Sources of Business Ideas",
+      "academicYear": "Semester II Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which of the following is not a method of generating new business idea?",
+      "options": [
+        "Distribution channel",
+        "Problem inventory analysis",
+        "Brainstorming",
+        "Focus group"
+      ],
+      "correctAnswer": "A",
+      "why": "Distribution channels are a source, not a generation method. Brainstorming, focus groups, and problem inventory are methods.",
+      "reference": "Unit 2, Session 2 - Idea Generation Techniques",
+      "academicYear": "Semester II Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which phase of new business venture begins with an idea for the venture and ends when the doors of the venture are opened for business?",
+      "options": [
+        "Start-up",
+        "Post-Start-up",
+        "Pre Start-up",
+        "Mid Start-up"
+      ],
+      "correctAnswer": "C",
+      "why": "The pre-start-up phase runs from idea conception to actual launch.",
+      "reference": "Unit 2, Session 3 - Phases of Venture Creation",
+      "academicYear": "Semester II Quiz I, 2020/2021"
+    },
+    {
+      "question": "Mr. John Mensah (a Chartered Accountant) bought 30% shares to become part owner of ReGAS Financial Services, a company owned by two professional accountants. Mr. Mensah can be classified under which options for small business buyers?",
+      "options": [
+        "Outright purchase",
+        "Buy-in",
+        "Buy-out",
+        "Buy-in Management Buy-out"
+      ],
+      "correctAnswer": "B",
+      "why": "A buy-in occurs when an outsider buys part ownership in an existing firm.",
+      "reference": "Unit 2, Session 5 - Options for Small Business Buyers",
+      "academicYear": "Semester II Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which type of franchising can also be referred to as Dealership?",
+      "options": [
+        "Trade name franchising",
+        "Product distribution Franchising",
+        "Pure franchising",
+        "Comprehensive franchising"
+      ],
+      "correctAnswer": "B",
+      "why": "Dealerships (e.g., cars, fuel) operate under product distribution franchising.",
+      "reference": "Unit 2, Session 6 - Types of Franchising",
+      "academicYear": "Semester II Quiz I, 2020/2021"
+    }
+  ],
+  "Semester I Quiz I, 2021/2022": [
+    {
+      "question": "Which of the following is not a factor that affects the entrepreneurship process?",
+      "options": [
+        "Psychological factors",
+        "Situational factors",
+        "Sociological factors",
+        "Cultural factors"
+      ],
+      "correctAnswer": "D",
+      "why": "The approaches that are used to examine the entrepreneurial process are the psychological, sociological and situational approaches. ",
+      "reference": "Unit 1, Session 3 - Factors that Influence the Entrepreneurial Process",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "All the following are forces in the external environment of business except ______.",
+      "options": [
+        "Technological factors",
+        "Customers",
+        "Political factors",
+        "Legal factors"
+      ],
+      "correctAnswer": "B",
+      "why": "The environment is discussed in terms of political, legal, technological, economic and socio-cultural forces. Customers are stakeholders, not a macro-environment force in the model used in the book.",
+      "reference": "Unit 1, Session 4 - External Environment of Entrepreneurship",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Kwame Gyan, a successful entrepreneur believes that what he has achieved is as a result of his hard work, perseverance and dedication. Kwame is said to have ______ locus of control.",
+      "options": [
+        "Internal",
+        "External",
+        "Personal",
+        "Positive"
+      ],
+      "correctAnswer": "A",
+      "why": "Internal locus of control means believing success comes from one's own effort, not luck or fate.",
+      "reference": "Unit 1, Session 2 - Locus of Control",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "The marginalisation of individuals or groups of individuals from the core of society is termed as ______.",
+      "options": [
+        "Negative displacement",
+        "Positive displacement",
+        "Stereotyping",
+        "Prejudice"
+      ],
+      "correctAnswer": "A",
+      "why": "Negative displacement refers to people being pushed into entrepreneurship due to exclusion, job loss, or social marginalisation.",
+      "reference": "Unit 1, Session 3 - Sociological Influences on Entrepreneurship",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "The entrepreneur is the individual or team that leads and develops the venture. Respectively, which best describes the processes he goes through to build a venture?",
+      "options": [
+        "Opportunity, organization, and resources",
+        "Opportunity, resources, and organization",
+        "Organization, opportunity, and resources",
+        "Resources, organization, and opportunity"
+      ],
+      "correctAnswer": "B",
+      "why": "The entrepreneurial process starts with opportunity identification, then assembling resources, and finally building the organization.",
+      "reference": "Unit 1, Session 2 - The Entrepreneurial Process",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Kwesi pursued a carpentry and joinery programme at Biriwa NVTI. Upon completion of his programme, he acquired some tools and a facility and started his own carpentry shop and now has two apprentices working with him. Kwesi can be classified as ______.",
+      "options": [
+        "Craft entrepreneur",
+        "Nascent entrepreneur",
+        "Novice entrepreneur",
+        "Opportunist entrepreneur"
+      ],
+      "correctAnswer": "A",
+      "why": "A craft entrepreneur uses technical/vocational skills (e.g. carpentry) to start a business based on personal expertise.",
+      "reference": "Unit 1, Session 2 - Types of Entrepreneurs",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "In the locus-of-control theory, people who believe that's for the most part, the future is theirs to control through their own efforts are said to have ______.",
+      "options": [
+        "Interior locus of control",
+        "Exterior locus of control",
+        "Internal locus of control",
+        "External locus of control"
+      ],
+      "correctAnswer": "C",
+      "why": "Belief that outcomes depend on personal effort defines internal locus of control.",
+      "reference": "Unit 1, Session 2 - Psychological Characteristics of Entrepreneurs",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which phase of a new venture begins with initiation of sales activity and the delivery of product and services and ends when the business is firmly established and beyond short-term threats survival?",
+      "options": [
+        "Start up phase",
+        "Pre Start-up phase",
+        "Mid start-up phase",
+        "Post Start-up phase"
+      ],
+      "correctAnswer": "A",
+      "why": "The start-up phase covers launching, first sales, delivery of products/services, and stabilizing the firm.",
+      "reference": "Unit 2, Session 3 - Phases of Venture Creation",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Under Ronstadt (1985) classification of growth, ventures that appear to have independence, autonomy and control as they are primary driving forces are classified as ______.",
+      "options": [
+        "Small profitable ventures",
+        "Life style ventures",
+        "High growth ventures",
+        "Profitable ventures"
+      ],
+      "correctAnswer": "B",
+      "why": "Lifestyle ventures prioritize independence and control rather than aggressive growth.",
+      "reference": "Unit 1, Session 4 - Growth Orientation of Ventures (Ronstadt)",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Buying into an existing firm and become part owner oshareholder with those that already exist can be termed as ______.",
+      "options": [
+        "Buy out",
+        "Buy in management buy out",
+        "Buy in",
+        "Outright purchase"
+      ],
+      "correctAnswer": "C",
+      "why": "A buy-in occurs when an outsider purchases part ownership in an existing business.",
+      "reference": "Unit 2, Session 5 - Options for Small Business Buyers",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which of the following is not one of the advantages of buying existing business?",
+      "options": [
+        "Overcoming barriers to market entry",
+        "Potential ill will",
+        "Insider knowledge",
+        "Buying market share"
+      ],
+      "correctAnswer": "B",
+      "why": "Ill will is a disadvantage, not an advantage, of buying an existing firm.",
+      "reference": "Unit 2, Session 5 - Advantages and Disadvantages of Buying a Business",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "A business agreement in which a company grants other the right and license to sell a product or service and possibly to use the business system developed by the company is referred to as ______.",
+      "options": [
+        "Partnership",
+        "Franchising",
+        "Agency",
+        "Wholesaling"
+      ],
+      "correctAnswer": "B",
+      "why": "Franchising allows another party to use a firm's brand, product and sometimes its operating system.",
+      "reference": "Unit 2, Session 6 - Meaning of Franchising",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which of the following is not one of the characteristics of a firm resources?",
+      "options": [
+        "Market exist for them",
+        "They have value",
+        "They cannot be consumed",
+        "They can only be used once"
+      ],
+      "correctAnswer": "D",
+      "why": "Resources are valuable and reusable. Saying they can only be used once is incorrect.",
+      "reference": "Unit 4, Session 1 - Nature and Characteristics of Business Resources",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which of the following is not one of the factors to be considered when assessing the credit worthiness of a firm?",
+      "options": [
+        "Capacity",
+        "Guarantee",
+        "Factoring",
+        "Circumstance"
+      ],
+      "correctAnswer": "C",
+      "why": "Creditworthiness uses criteria such as capacity, character, capital, collateral, conditions. Factoring is financing, not assessment.",
+      "reference": "Unit 6, Session 2 - Assessing Credit Worthiness",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "According to Hirsch and Peters, which is the largest source for new business idea?",
+      "options": [
+        "Research and development",
+        "Government agencies",
+        "Consumers",
+        "Existing Companies"
+      ],
+      "correctAnswer": "C",
+      "why": "Hisrich & Peters identify consumers as the biggest source of new venture ideas.",
+      "reference": "Unit 2, Session 2 - Sources of Business Ideas",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which of the following is not a method of generating new business idea?",
+      "options": [
+        "Distribution channel",
+        "Problem inventory analysis",
+        "Brainstorming",
+        "Focus group"
+      ],
+      "correctAnswer": "A",
+      "why": "Distribution channels are sources, not generation techniques. Brainstorming, focus groups and problem inventory are techniques.",
+      "reference": "Unit 2, Session 2 - Idea Generation Techniques",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which of the following is not a psychological approach to entrepreneurship?",
+      "options": [
+        "Perception of desirability",
+        "Need for achievement",
+        "Locus of Control",
+        "Risk taking propensity"
+      ],
+      "correctAnswer": "A",
+      "why": "Need for achievement, locus of control and risk taking are psychological traits. Perception of desirability belongs more to a situational approach.",
+      "reference": "Unit 1, Session 3 - Situational Characteristics",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "All the following are approaches used to examine the entrepreneurial process, except ______.",
+      "options": [
+        "Sociological approach",
+        "Scientific approach",
+        "Psychological approach",
+        "Situational approach"
+      ],
+      "correctAnswer": "B",
+      "why": "The approaches used are psychological, sociological, and cultural/situational approaches. Scientific approach is not used.",
+      "reference": "Unit 1, Session 3 - Approaches to Entrepreneurship",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which section of a business plan establishes a favorable first impression\u2026 and secure financing?",
+      "options": [
+        "Introductory page",
+        "Industry analysis",
+        "Executive Summary",
+        "Production Plan"
+      ],
+      "correctAnswer": "C",
+      "why": "The executive summary sells the business to investors and lenders first.",
+      "reference": "Unit 3, Session 2 - Components of a Business Plan",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which type of franchising can also be referred to as Business format?",
+      "options": [
+        "Trade name franchising",
+        "Product distribution Franchising",
+        "Pure franchising",
+        "Dealership franchising"
+      ],
+      "correctAnswer": "C",
+      "why": "Pure (business-format) franchising provides the full operating system, brand, procedures and support.",
+      "reference": "Unit 2, Session 6 - Types of Franchising",
+      "academicYear": "Semester I Quiz I, 2021/2022"
+    }
+  ],
+  "Semester II Quiz I, 2021/2022": [
+    {
+      "question": "The components of the entrepreneurial process are ______.",
+      "options": [
+        "Entrepreneur, opportunity, finance and resources",
+        "Entrepreneur, ideas, resource and opportunity",
+        "Entrepreneur, opportunity, resource and profit",
+        "Entrepreneur, opportunity, resource and organization"
+      ],
+      "correctAnswer": "D",
+      "why": "The entrepreneurial process consists of the entrepreneur, opportunity identification, assembling resources, and building the organization to exploit the opportunity.",
+      "reference": "Unit 1, Session 2 The Entrepreneurial Process",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "The written outline of the entrepreneur's proposed venture, it's operational and financial details, its marketing opportunities and strategy, and its managers skill is referred to as ______.",
+      "options": [
+        "Strategic Plan",
+        "Mission statement",
+        "Business Plan",
+        "Feasibility Study"
+      ],
+      "correctAnswer": "C",
+      "why": "A business plan documents operations, marketing, finance, and managerial capability of a venture.",
+      "reference": "Unit 3, Session 1 - Meaning of a Business Plan",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "A part of a business plan that is written last but is always placed at the beginning of the plan is the ______.",
+      "options": [
+        "marketing plan",
+        "production plan",
+        "executive summary",
+        "appendices"
+      ],
+      "correctAnswer": "C",
+      "why": "The executive summary summarizes the entire plan, so it is written last but placed first.",
+      "reference": "Unit 3, Session 2 - Structure of the Business Plan",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "Kwame Ntow, a successful entrepreneur believes that what he has achieved as a result of his hard work, perseverance and dedication. Kwame is said to have ______ locus of control.",
+      "options": [
+        "Internal",
+        "External",
+        "Personal",
+        "Positive"
+      ],
+      "correctAnswer": "A",
+      "why": "Internal locus of control means believing outcomes depend on personal effort.",
+      "reference": "Unit 1, Session 2 - Locus of Control",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "The marginalization of individual or group from the core of society is termed as ______.",
+      "options": [
+        "Stereotyping",
+        "Positive pull",
+        "External locus of control",
+        "Negative displacement"
+      ],
+      "correctAnswer": "D",
+      "why": "Negative displacement occurs when people are pushed into entrepreneurship through exclusion, job loss, or social marginalization.",
+      "reference": "Unit 1, Session 3 - Sociological Influences on Entrepreneurship",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "An individual with no prior ownership experience but currently owns equity in a business is referred to as ______.",
+      "options": [
+        "Nascent Entrepreneur",
+        "Novice Entrepreneur",
+        "Serial Entrepreneur",
+        "Portfolio Entrepreneur"
+      ],
+      "correctAnswer": "B",
+      "why": "A novice entrepreneur owns a business for the first time and has no previous ownership experience.",
+      "reference": "Unit 1, Session 2 - Types of Entrepreneurs",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "The following are roles of the entrepreneur in business except that they ______.",
+      "options": [
+        "Combine economic factors",
+        "Enhance economic efficiency",
+        "Do not accept uncertainty",
+        "Maximize investors returns"
+      ],
+      "correctAnswer": "C",
+      "why": "Entrepreneurs accept uncertainty and risk. Saying they do not accept it is incorrect.",
+      "reference": "Unit 1, Session 1 - Role of Entrepreneurs in the Economy",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which stage of a new venture starts at the initiation of sales activities and the delivery of products and services and ends when the business is firmly established?",
+      "options": [
+        "post start-up phase",
+        "pre-start-up phase",
+        "start-up phase",
+        "All of the above"
+      ],
+      "correctAnswer": "C",
+      "why": "The start-up phase begins with first sales and continues until the firm is stable beyond short-term threats.",
+      "reference": "Unit 2, Session 3 - Phases of Venture Creation",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "Who should write the business plan?",
+      "options": [
+        "The entrepreneur",
+        "The investor",
+        "The manager",
+        "All of the above"
+      ],
+      "correctAnswer": "A",
+      "why": "The entrepreneur understands the venture best and must take ownership of the plan. Others may assist but not replace the entrepreneur.",
+      "reference": "Unit 3, Session 1 - Responsibility for Preparing the Business Plan",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "The purchase of a business, or a significant part of it, by its current management is referred to as ______.",
+      "options": [
+        "Buy-in",
+        "Buy-out",
+        "Outright purchase",
+        "Buy-in management Buy-out (BIMBO)"
+      ],
+      "correctAnswer": "B",
+      "why": "A management buy-out (MBO) happens when existing managers purchase the business they manage.",
+      "reference": "Unit 2, Session 5 - Options for Small Business Buyers",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which of the following is not one of the importance of the business plan?",
+      "options": [
+        "It helps determine the viability of the venture",
+        "It provides guidance to the entrepreneur",
+        "It serves as a reference to the competitors",
+        "It helps obtain finance"
+      ],
+      "correctAnswer": "C",
+      "why": "A business plan is for owners and financiers, not for competitors.",
+      "reference": "Unit 3, Session 1 - Importance of Business Planning",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "Arrange the procedures for buying an existing business (Owens, 1990). I. Prepare a list of potential candidates II. Investigate and evaluate candidates III. Explore financing options IV. Ensure smooth transition V. Analyze your skills, abilities and interest",
+      "options": [
+        "I, II, III, IV and V",
+        "V, I, II, III and IV",
+        "IV, I, II, III and V",
+        "III, I, II, IV and V"
+      ],
+      "correctAnswer": "B",
+      "why": "You start by analyzing yourself, then listing candidates, investigating them, arranging finance, and finally ensuring transition.",
+      "reference": "Unit 2, Session 5 - Buying an Existing Business",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "The following are advantages of starting your own small business, except ______.",
+      "options": [
+        "Creation of the owners",
+        "Clean sheets",
+        "Hard, lonely work",
+        "Satisfaction of the owner"
+      ],
+      "correctAnswer": "C",
+      "why": "Hard and lonely work is a disadvantage, not an advantage.",
+      "reference": "Unit 1, Session 4 - Advantages and Disadvantages of Small Business",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "The following are disadvantages of starting your own small business, except ______.",
+      "options": [
+        "Less funds required",
+        "Unproven idea",
+        "Barriers to entry",
+        "No track record"
+      ],
+      "correctAnswer": "A",
+      "why": "Requiring less funds is an advantage, not a disadvantage.",
+      "reference": "Unit 1, Session 4 - Advantages and Disadvantages of Small Business",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "The critical factors of Pre-start-Up and start-Up Phases include: I. Relative uniqueness II. Relative investment size III. Availability of products",
+      "options": [
+        "I, II, and III",
+        "I and II",
+        "II and III",
+        "I and III"
+      ],
+      "correctAnswer": "A",
+      "why": "All three affect feasibility and survival in early venture stages.",
+      "reference": "Unit 2, Session 3 - Critical Factors in Venture Creation",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "The following are sources of new ideas except:",
+      "options": [
+        "Brainstorming",
+        "Customers",
+        "Existing business",
+        "Research and development"
+      ],
+      "correctAnswer": "A",
+      "why": "Brainstorming is a method, not a source. Customers, firms, and R&D are sources.",
+      "reference": "Unit 2, Session 2 - Sources of Business Ideas",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "The process of setting up your own business starts with ______.",
+      "options": [
+        "acquisition of resources",
+        "identification of opportunity",
+        "leading and directing the organisation",
+        "managing people"
+      ],
+      "correctAnswer": "B",
+      "why": "Entrepreneurship begins with opportunity identification before resources and management.",
+      "reference": "Unit 1, Session 2 - The Entrepreneurial Process",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "The characteristics of an individual that cause consistent patterns in behaviour overtime can be referred to as ______.",
+      "options": [
+        "habit",
+        "attitude",
+        "behaviour",
+        "personality"
+      ],
+      "correctAnswer": "D",
+      "why": "Personality explains stable behaviour patterns over time.",
+      "reference": "Unit 1, Session 2 - Entrepreneurial Personality",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "According to Ronstadt (1985) classification of ventures, a venture that appear to have independence come and autonomy, and control as their primary driving forces and neither large scale more profits are deemed importance beyond providing a sufficient and comfortable living for the entrepreneur is termed as ______.",
+      "options": [
+        "Small profitable venture",
+        "Life style ventures",
+        "High profitable venture",
+        "High-growth venture"
+      ],
+      "correctAnswer": "B",
+      "why": "Lifestyle ventures prioritize autonomy and comfortable living over rapid growth.",
+      "reference": "Unit 1, Session 4 - Growth Orientation of Ventures",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    },
+    {
+      "question": "A business agreement in which a company grants others the right and license to sell a product or service and possibly to use the business system developed by the company is referred to as ______.",
+      "options": [
+        "Partnership",
+        "Company",
+        "Franchising",
+        "Joint Venture"
+      ],
+      "correctAnswer": "C",
+      "why": "Franchising allows others to use a firm's product, brand, and sometimes operating system.",
+      "reference": "Unit 2, Session 6 - Meaning of Franchising",
+      "academicYear": "Semester II Quiz I, 2021/2022"
+    }
+  ],
+  "Semester I Quiz I, 2022/2023": [
+    {
+      "question": "Individuals who currently have minority or majority ownership stakes in two or more independent businesses that are either new, purchased and/or inherited can be classified as ______ entrepreneur.",
+      "options": [
+        "Novice",
+        "Serial",
+        "Nascent Portfolio",
+        "Portfolio"
+      ],
+      "correctAnswer": "D",
+      "why": "A portfolio entrepreneur owns and manages two or more businesses at the same time. Novice = first-time owner. Serial = starts one after another, not simultaneously.",
+      "reference": "Unit 1, Session 2 - Types of Entrepreneurs",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "The predisposition to have particular beliefs, attitude and behavior represented is ______.",
+      "options": [
+        "Culture",
+        "Personality",
+        "Norms",
+        "Character"
+      ],
+      "correctAnswer": "B",
+      "why": "Personality explains the stable patterns of beliefs, attitudes, and behavior an individual shows over time.",
+      "reference": "Unit 1, Session 2 - Entrepreneurial Personality",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "The gap in the market that represents the possibility of doing something new, different and better and so the chance to create value is referred to as ______.",
+      "options": [
+        "Opportunity",
+        "Idea",
+        "Resource",
+        "Niche"
+      ],
+      "correctAnswer": "A",
+      "why": "An opportunity is a market gap where value can be created through new or improved products or services.",
+      "reference": "Unit 1, Session 2 - Opportunity Identification",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Individuals who believe that what happens to them is a result of fate, chance, or forces beyond their control is said to have ______.",
+      "options": [
+        "Risk-taking propensity",
+        "High need for achievement",
+        "Internal locus of control",
+        "External locus of control"
+      ],
+      "correctAnswer": "D",
+      "why": "People with external locus of control believe outcomes are controlled by luck, fate, or external forces, not personal effort.",
+      "reference": "Unit 1, Session 2 - Locus of Control",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Environmental factors such as the population, interest rate and inflation that influence business activities can be classified under ______.",
+      "options": [
+        "Political environment",
+        "Legal environment",
+        "Socio-cultural environment",
+        "Economic environment"
+      ],
+      "correctAnswer": "D",
+      "why": "Population trends, interest rates, and inflation are economic variables affecting demand, cost, and investment.",
+      "reference": "Unit 2, Session 1 - Business Environment",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Which of the following is not a component of a competitive market?",
+      "options": [
+        "The taste and preferences of consumers",
+        "The availability of substitute product",
+        "The intensity of competition within the industry",
+        "The ease with which firms can enter the industry"
+      ],
+      "correctAnswer": "A",
+      "why": "Taste and preference belong to the socio-cultural environment, not the competitive environment. Competitive market focuses on rivals, substitutes, entry barriers, and industry rivalry.",
+      "reference": "Unit 2, Session 1 - Competitive Environment",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "The following are roles of small businesses to economic development except ______.",
+      "options": [
+        "They contribute to forward and backward linkages",
+        "The indigenous technology is abandoned",
+        "They make efficient use of scarce factors",
+        "They make efficient use of scarce factors"
+      ],
+      "correctAnswer": "B",
+      "why": "Small businesses promote and adapt indigenous technology, they do not abandon it. The other options support development.",
+      "reference": "Unit 1, Session 1 - Role of Small Businesses in Development",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "The following are advantages of starting your own business except ______.",
+      "options": [
+        "Creation of the owner",
+        "Overcoming barriers of entry",
+        "Clean Sheet",
+        "Control of the owners"
+      ],
+      "correctAnswer": "B",
+      "why": "New businesses usually face barriers, they do not automatically overcome them. Clean sheet, control, and satisfaction are advantages.",
+      "reference": "Unit 1, Session 4 - Advantages of Starting a Business",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "The required number of participants in a focus group discussion ranges from ______.",
+      "options": [
+        "5 to 11",
+        "8 to 11",
+        "8 to 14",
+        "5 to 14"
+      ],
+      "correctAnswer": "C",
+      "why": "A focus group normally contains about 8 to 14 participants for effective interaction and control.",
+      "reference": "Unit 2, Session 2 - Focus Groups",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Which phase of a new venture lasts until the venture is terminated or no longer controlled by the entrepreneur?",
+      "options": [
+        "Start-up",
+        "Pre-start up",
+        "Post Start-up",
+        "Idea generation"
+      ],
+      "correctAnswer": "C",
+      "why": "The post start-up phase covers growth, maturity, and eventual exit or termination.",
+      "reference": "Unit 2, Session 3 - Phases of Venture Creation",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "A business agreement in which a company grants others the right and license to sell a product or service is referred to as ______.",
+      "options": [
+        "Partnership",
+        "Franchising",
+        "Agency",
+        "Wholesaling"
+      ],
+      "correctAnswer": "B",
+      "why": "Franchising allows another party to use the brand, product, and sometimes the business system.",
+      "reference": "Unit 2, Session 6 - Meaning of Franchising",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Business plan can be triggered by all the following events except ______.",
+      "options": [
+        "Business purchase",
+        "Start Up",
+        "Ongoing review",
+        "Minor decisions"
+      ],
+      "correctAnswer": "D",
+      "why": "Business plans are prepared for major actions like start-ups, purchases, and reviews, not small daily decisions.",
+      "reference": "Unit 3, Session 1 - When Business Plans Are Needed",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "The following are options available to the entrepreneur to be involved in existing business except ______.",
+      "options": [
+        "Buy-in",
+        "Outright purchase",
+        "Management Buy-out",
+        "Buy-in Management buy-out"
+      ],
+      "correctAnswer": "D",
+      "why": "Standard options are buy-in, buy-out, outright purchase. BIMBO is a special case, not listed as a normal direct option.",
+      "reference": "Unit 2, Session 5 - Options for Small Business Buyers",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Which among the following are not advantages of franchising to the franchisee? I. Management training and support II. Franchise fees and profit sharing III. Less freedom IV. Knowledge of the market V. Standardized quality",
+      "options": [
+        "I, IV and V",
+        "II and IV",
+        "I, II and III",
+        "I and III"
+      ],
+      "correctAnswer": "B",
+      "why": "Franchise fees and profit sharing are costs. Market knowledge is mainly franchisor-driven, not a direct advantage listed to franchisee.",
+      "reference": "Unit 2, Session 6 - Advantages and Disadvantages of Franchising",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Which of the following is not one of the control elements in a business plan?",
+      "options": [
+        "Inventory control",
+        "Disbursement",
+        "Inventory control",
+        "Marketing control"
+      ],
+      "correctAnswer": "B",
+      "why": "Control elements include inventory, marketing, production, and financial control. Disbursement alone is not classified as a control element.",
+      "reference": "Unit 3, Session 2 - Control Measures in Business Plans",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "According to Hisrich and Peters, business plans may fail due to ______. I. Unreasonable goals II. Goals not measurable III. Lack of commitment IV. No experience",
+      "options": [
+        "I, II, III only",
+        "I and III only",
+        "I, II, III and IV",
+        "I only"
+      ],
+      "correctAnswer": "C",
+      "why": "All four factors contribute to failure: poor goals, lack of measurement, weak commitment, and no experience.",
+      "reference": "Unit 3, Session 3 - Causes of Business Plan Failure",
+      "academicYear": "Semester I Quiz I, 2022/2023"
+    }
+  ],
+  "Semester II Quiz I, 2022/2023": [
+    {
+      "question": "What differentiates opportunist entrepreneurs from traditional entrepreneurs?",
+      "options": [
+        "Opportunist entrepreneurs focus solely on profit, while traditional entrepreneurs prioritize social impact.",
+        "Opportunist entrepreneurs are quick to adapt to changing circumstances, whereas traditional entrepreneurs follow a fixed business model.",
+        "Opportunist entrepreneurs exclusively pursue large-scale ventures, while traditional entrepreneurs engage in small businesses.",
+        "Opportunist entrepreneurs always work independently, while traditional entrepreneurs prefer partnerships."
+      ],
+      "correctAnswer": "B",
+      "why": "An opportunist entrepreneur is flexible, alert, and quick to exploit changing situations and new market gaps. Traditional entrepreneurs usually follow a more stable or planned model.",
+      "reference": "Unit 1, Session 2 - Types of Entrepreneurs (Opportunist Entrepreneur)",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "What term is used to describe individuals who are in the early stages of preparing to start a new business?",
+      "options": [
+        "Serial entrepreneurs",
+        "Novice entrepreneurs",
+        "Nascent entrepreneurs",
+        "Portfolio entrepreneurs"
+      ],
+      "correctAnswer": "C",
+      "why": "A nascent entrepreneur is someone actively preparing to start a venture but has not fully launched it yet.",
+      "reference": "Unit 1, Session 2 - Nascent Entrepreneurs",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "What distinguishes novice entrepreneurs from portfolio entrepreneurs?",
+      "options": [
+        "Limited financial resources",
+        "Strong industry connections",
+        "Extensive market research",
+        "Lack of entrepreneurial experience"
+      ],
+      "correctAnswer": "D",
+      "why": "A novice entrepreneur is a first-time business owner with no prior ownership experience, unlike portfolio entrepreneurs who run multiple firms.",
+      "reference": "Unit 1, Session 2 - Novice vs Portfolio Entrepreneurs",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "Miss Eunice Agyei's political exit and movement into business represents which sociological perspective?",
+      "options": [
+        "Negative Displacement",
+        "Positive push",
+        "Between Things",
+        "Perception of desirability"
+      ],
+      "correctAnswer": "C",
+      "why": "Between things refers to people who are in transition, displaced from one role and not wishing to return, so they choose entrepreneurship.",
+      "reference": "Unit 1, Session 3 - Sociological Approaches (Between Things)",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "An individual who believes they have the skills, resources, and opportunity to run a business experiences ______.",
+      "options": [
+        "Positive Pull",
+        "Positive Push",
+        "Perception of Desirability",
+        "Perception of Feasibility"
+      ],
+      "correctAnswer": "D",
+      "why": "Perception of feasibility means the person believes they can successfully start and manage a venture.",
+      "reference": "Unit 1, Session 3 - Perception of Feasibility",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "Kwesi trained as a carpenter and started his own shop with apprentices. Kwesi is ______.",
+      "options": [
+        "Craft entrepreneur",
+        "Nascent entrepreneur",
+        "Novice entrepreneur",
+        "Opportunist entrepreneur"
+      ],
+      "correctAnswer": "A",
+      "why": "A craft entrepreneur uses technical/vocational skills to start and manage a small business.",
+      "reference": "Unit 1, Session 2 - Craft Entrepreneurs",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "Which involves showing a preliminary product/service to customers to gauge interest?",
+      "options": [
+        "Usability testing",
+        "Concept testing",
+        "Product testing",
+        "Feasibility testing"
+      ],
+      "correctAnswer": "B",
+      "why": "Concept testing presents a description or idea of the product to customers to measure desirability before development.",
+      "reference": "Unit 2, Session 2 - Concept Testing",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "Which section of a business plan includes competitors and target customers?",
+      "options": [
+        "Financial Projections",
+        "Company Description",
+        "Market Analysis",
+        "Market Strategy"
+      ],
+      "correctAnswer": "C",
+      "why": "The market analysis section studies customers, competitors, industry trends, and demand.",
+      "reference": "Unit 3, Session 2 - Market Analysis Section",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "Which of the following is not a primary audience for a business plan?",
+      "options": [
+        "Customers",
+        "Competitors",
+        "Potential investors and lenders",
+        "Current employees"
+      ],
+      "correctAnswer": "B",
+      "why": "Business plans are written for owners, staff, lenders, and investors, not for competitors.",
+      "reference": "Unit 3, Session 1 - Audience of a Business Plan",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "Which section of a Full Business Plan contains organizational structure analysis?",
+      "options": [
+        "Competitive analysis",
+        "Marketing plan",
+        "Operations plan",
+        "Creativity plan"
+      ],
+      "correctAnswer": "C",
+      "why": "The operations plan explains management structure, workflow, staffing, and operations.",
+      "reference": "Unit 3, Session 2 - Operations Plan",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "Who is a social entrepreneur?",
+      "options": [
+        "Maximizes profit only",
+        "Starts social media businesses",
+        "Addresses welfare and environmental issues",
+        "Works in entertainment"
+      ],
+      "correctAnswer": "C",
+      "why": "A social entrepreneur uses business to solve social and environmental problems, not just profit.",
+      "reference": "Unit 1, Session 1 - Social Entrepreneurship",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "What is the importance of entrepreneurship in economic development?",
+      "options": [
+        "Hinders growth",
+        "Creates jobs and stimulates innovation",
+        "Increases low quality",
+        "Discourages foreign investment"
+      ],
+      "correctAnswer": "B",
+      "why": "Entrepreneurship creates employment, innovation, income, and productivity growth.",
+      "reference": "Unit 1, Session 1 - Entrepreneurship and Economic Development",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "Which trait is associated with successful entrepreneurs?",
+      "options": [
+        "Avoid risks",
+        "Depend on luck",
+        "Embrace challenges and take calculated risks",
+        "Follow trends blindly"
+      ],
+      "correctAnswer": "C",
+      "why": "Entrepreneurs take calculated risks, not reckless or fearful behavior.",
+      "reference": "Unit 1, Session 2 - Entrepreneurial Traits",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "Which is an example of an entrepreneur?",
+      "options": [
+        "Accountant in firm",
+        "Public teacher",
+        "Engineer employee",
+        "Individual starting food delivery service"
+      ],
+      "correctAnswer": "D",
+      "why": "An entrepreneur creates and owns a business venture, not just works as an employee.",
+      "reference": "Unit 1, Session 1 - Meaning of Entrepreneur",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "An entrepreneur is known for what portfolio?",
+      "options": [
+        "Creating handmade products",
+        "Managing diverse business ventures",
+        "Freelancing",
+        "Company Description"
+      ],
+      "correctAnswer": "B",
+      "why": "A portfolio entrepreneur manages several businesses simultaneously.",
+      "reference": "Unit 1, Session 2 - Portfolio Entrepreneurs",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "Primary goal of brainstorming?",
+      "options": [
+        "Select first idea",
+        "Generate many diverse ideas",
+        "Criticize immediately",
+        "Limit participants"
+      ],
+      "correctAnswer": "B",
+      "why": "Brainstorming aims at quantity and variety before evaluation.",
+      "reference": "Unit 2, Session 2 - Brainstorming Technique",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "What source involves buying rights to operate a proven business model?",
+      "options": [
+        "Existing businesses",
+        "Franchises",
+        "Corporations",
+        "Customers"
+      ],
+      "correctAnswer": "B",
+      "why": "Franchising allows entrepreneurs to use an existing brand and system.",
+      "reference": "Unit 2, Session 6 - Franchising as Idea Source",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "Entrepreneurs with internal locus of control believe that ______.",
+      "options": [
+        "Luck controls success",
+        "External factors have limited impact",
+        "Government determines success",
+        "Collaboration is everything"
+      ],
+      "correctAnswer": "B",
+      "why": "People with internal locus of control believe success depends mainly on their own effort.",
+      "reference": "Unit 1, Session 2 - Internal Locus of Control",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    },
+    {
+      "question": "Why conduct a feasibility analysis before committing to a business idea?",
+      "options": [
+        "Attract customers immediately",
+        "Create business plan",
+        "Identify risks and challenges",
+        "Secure bank loan"
+      ],
+      "correctAnswer": "C",
+      "why": "Feasibility analysis checks market, technical, financial, and organizational risks before investing heavily.",
+      "reference": "Unit 2, Session 3 - Feasibility Analysis",
+      "academicYear": "Semester II Quiz I, 2022/2023"
+    }
+  ],
+  "Semester I Quiz I, 2023/2024": [
+    {
+      "question": "Portfolio entrepreneurs are known for ______.",
+      "options": [
+        "creating intricate handmade products.",
+        "focusing solely on one large-scale enterprise.",
+        "managing a diverse range of business ventures.",
+        "providing freelance services in multiple industries."
+      ],
+      "correctAnswer": "C",
+      "why": "A portfolio entrepreneur owns and manages several businesses at the same time, spreading risk and opportunity across ventures.",
+      "reference": "Unit 1, Session 2 - Types of Entrepreneurs (Portfolio Entrepreneur).",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "The sequence of activities, stages, and steps that individuals or groups undertake to create, develop, and manage a new business venture is referred to as ______.",
+      "options": [
+        "entrepreneurial process",
+        "entrepreneurship",
+        "feasibility analysis",
+        "opportunity"
+      ],
+      "correctAnswer": "A",
+      "why": "The entrepreneurial process explains the step-by-step activities involved in starting and growing a venture.",
+      "reference": "Unit 1, Session 4 - The Entrepreneurial Process.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "The characteristic of an individual that causes consistent patterns in that individual's behaviour over time is referred to as ______.",
+      "options": [
+        "Attitude",
+        "Believe",
+        "Norms",
+        "Personality"
+      ],
+      "correctAnswer": "D",
+      "why": "Personality explains the stable, consistent behavior patterns of individuals across situations and time.",
+      "reference": "Unit 1, Session 2 - Personality Characteristics of Entrepreneurs.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Which combination of psychological traits is likely to result in a successful entrepreneur?",
+      "options": [
+        "High need for achievement, internal locus of control, and calculated risk-taking.",
+        "High need for achievement, internal locus of control, and reckless risk-taking.",
+        "Low need for achievement, external locus of control, and impulsive decision-making.",
+        "Low need for achievement, external locus of control, and risk aversion."
+      ],
+      "correctAnswer": "A",
+      "why": "Successful entrepreneurs show achievement motivation, believe outcomes depend on them (internal locus), and take calculated, not reckless, risks.",
+      "reference": "Unit 1, Session 2 - Psychological Traits of Entrepreneurs.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "The ideal numbers for a focus group discussion are between ______ participants.",
+      "options": [
+        "10 and 12",
+        "5 and 11",
+        "7 and 12",
+        "8 and 14"
+      ],
+      "correctAnswer": "D",
+      "why": "A focus group normally contains about 8 to 14 participants for effective interaction and control.",
+      "reference": "Unit 2, Session 2 - Focus Groups",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "All the following are sources of generating entrepreneurial ideas except ______.",
+      "options": [
+        "customers",
+        "existing companies",
+        "focus group",
+        "government agencies"
+      ],
+      "correctAnswer": "C",
+      "why": "A focus group is a method, not a source. Sources include customers, firms, and government agencies.",
+      "reference": "Unit 2, Session 2 - Sources of Business Ideas.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "What is the primary purpose of feasibility analysis in the context of developing business ideas? To ______.",
+      "options": [
+        "create a marketing strategy",
+        "determine legal requirements",
+        "evaluate the potential success and viability",
+        "secure funding"
+      ],
+      "correctAnswer": "C",
+      "why": "Feasibility analysis checks market, financial, technical, and organizational practicality before committing resources.",
+      "reference": "Unit 2, Session 3 - Feasibility Analysis.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Which of the following is not a primary audience for a business plan?",
+      "options": [
+        "Current competitors.",
+        "Current employees.",
+        "Potential customers.",
+        "Potential investors."
+      ],
+      "correctAnswer": "A",
+      "why": "Business plans are written for owners, staff, lenders, investors, and partners, not competitors.",
+      "reference": "Unit 3, Session 1 - Audience of a Business Plan.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Which psychological trait is characterized by a strong desire to excel, set challenging goals, and take personal responsibility for success or failure?",
+      "options": [
+        "High need for achievement",
+        "External locus of Control",
+        "Proactive personality",
+        "Risk-taking propensity"
+      ],
+      "correctAnswer": "A",
+      "why": "The need for achievement drives individuals to set goals, perform well, and accept responsibility.",
+      "reference": "Unit 1, Session 2 - Need for Achievement.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "The marginalization of individuals or groups of individuals from the core of society is termed as ______.",
+      "options": [
+        "between things",
+        "locus of control",
+        "negative displacement",
+        "perception of desirability"
+      ],
+      "correctAnswer": "C",
+      "why": "Negative displacement occurs when people are pushed into entrepreneurship due to social or economic marginalization.",
+      "reference": "Unit 1, Session 3 - Sociological Approaches (Negative Displacement).",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Environmental factors determining entrepreneurial activities include ______. I. Technical II. Economic III. Geographical IV. Political V. Socio-cultural",
+      "options": [
+        "I and II only",
+        "I, II, IV and V only",
+        "II, III and V only",
+        "II, IV and V only"
+      ],
+      "correctAnswer": "B",
+      "why": "Entrepreneurship is influenced mainly by technological, economic, political and socio-cultural environments.",
+      "reference": "Unit 1, Session 4 - Environmental Influences on Entrepreneurship.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "What typically happens in a buy-out?",
+      "options": [
+        "Existing management purchases the business",
+        "Outside party buys the firm",
+        "Assets sold",
+        "Forced sale"
+      ],
+      "correctAnswer": "A",
+      "why": "A buy-out happens when current managers/employees acquire ownership.",
+      "reference": "Unit 2, Session 5 - Buy-Out.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Which option minimizes risk by involving both existing and outside management?",
+      "options": [
+        "BIMBO",
+        "Buy-in",
+        "Buy-out",
+        "Outright purchase"
+      ],
+      "correctAnswer": "A",
+      "why": "BIMBO (Buy-In Management Buy-Out) combines inside managers and outside investors to reduce risk.",
+      "reference": "Unit 2, Session 5 - BIMBO.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Which is not a typical source for searching businesses for sale?",
+      "options": [
+        "Business brokers",
+        "Industry contacts",
+        "Newspapers",
+        "Real estate agents"
+      ],
+      "correctAnswer": "D",
+      "why": "Business sales use brokers, trade journals, networks, not property-focused real estate agents.",
+      "reference": "Unit 2, Session 5 - Searching for Businesses for Sale.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Which type of venture aims at moderate growth while maintaining autonomy and control?",
+      "options": [
+        "High-growth ventures",
+        "Lifestyle ventures",
+        "Public/private placements",
+        "Small profitable ventures"
+      ],
+      "correctAnswer": "B",
+      "why": "Lifestyle ventures focus on independence, control, and comfortable living rather than aggressive growth.",
+      "reference": "Unit 1, Session 5 - Ronstadt Classification of Ventures.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "What should a buyer consider when evaluating financial condition? The ______.",
+      "options": [
+        "Location",
+        "Competitors",
+        "Overall profitability",
+        "Customer base"
+      ],
+      "correctAnswer": "C",
+      "why": "Financial evaluation centers on profitability, cash flow, and financial performance.",
+      "reference": "Unit 2, Session 5 - Evaluating a Business Financially.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Which is a disadvantage of buying an existing business?",
+      "options": [
+        "Decrease in market value",
+        "Guaranteed profitability",
+        "Increase in brand reputation",
+        "Potential ill will from previous owner"
+      ],
+      "correctAnswer": "D",
+      "why": "Existing businesses may carry hidden problems, staff conflict, or customer resentment.",
+      "reference": "Unit 2, Session 5 - Disadvantages of Buying Existing Businesses.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "What advantage does a franchisee gain in product acceptance?",
+      "options": [
+        "Greater control",
+        "Limited options",
+        "Reduced resource expenditure",
+        "Uncertainty in credibility"
+      ],
+      "correctAnswer": "C",
+      "why": "Franchisees benefit from already-accepted brands, reducing marketing and credibility-building costs.",
+      "reference": "Unit 2, Session 6 - Advantages of Franchising.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "What is one primary purpose of a business plan? To ______.",
+      "options": [
+        "determine the viability of the venture in a market",
+        "entertain investors",
+        "serve as history",
+        "replace daily planning"
+      ],
+      "correctAnswer": "A",
+      "why": "A business plan helps assess market, finance, operations, and risk before committing resources.",
+      "reference": "Unit 3, Session 1 - Importance of Business Plan.",
+      "academicYear": "Semester I Quiz I, 2023/2024"
+    }
+  ],
+  "Semester I Quiz I, 2024/2025": [
+    {
+      "question": "The process of creating something new with value, by devoting the necessary time and effort, assuming the accompanying financial, psychic and social risks and receiving the resulting rewards of monetary, personal satisfaction and independence is referred to as ______.",
+      "options": [
+        "Entrepreneur",
+        "Entrepreneurship",
+        "Innovation",
+        "Production"
+      ],
+      "correctAnswer": "B",
+      "why": "This is the classic definition of entrepreneurship: creating value, committing effort, bearing risk, and earning rewards (money, satisfaction, independence).",
+      "reference": "Unit 1, Session 1 - Meaning and Definition of Entrepreneurship",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "The concept of entrepreneurship that focuses on an individual's assessment of how appealing and satisfying entrepreneurial activities are is known as ______.",
+      "options": [
+        "Perception of desirability",
+        "Perception of feasibility",
+        "Positive pull",
+        "Positive push"
+      ],
+      "correctAnswer": "A",
+      "why": "Perception of desirability refers to how attractive entrepreneurship feels to an individual, not whether they can do it.",
+      "reference": "Unit 1, Session 3 - Perception of Desirability",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "In which phase of a new venture does the entrepreneur focus on researching the market, developing a business plan, and securing funding?",
+      "options": [
+        "Expansion Phase",
+        "Pre-Start-Up Phase",
+        "Post-Start-Up Phase",
+        "Start-Up Phase"
+      ],
+      "correctAnswer": "B",
+      "why": "The pre-start-up phase involves idea development, market research, feasibility analysis, planning, and financing before operations begin.",
+      "reference": "Unit 2, Session 3 - Phases of New Venture Creation",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "All the following are benefits of product feasibility except ______.",
+      "options": [
+        "Additional cost of capital",
+        "Avoid obvious flaws in design",
+        "Get additional insights",
+        "Get the product right the first time"
+      ],
+      "correctAnswer": "A",
+      "why": "Product feasibility helps improve design and reduce mistakes. Additional cost of capital is not a benefit, it is a cost.",
+      "reference": "Unit 2, Session 3 - Product Feasibility Analysis",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Which section of a business plan typically includes information about competitors and target customers?",
+      "options": [
+        "Company description",
+        "Financial projections",
+        "Market analysis",
+        "Marketing strategy"
+      ],
+      "correctAnswer": "C",
+      "why": "The market analysis section examines customers, competitors, industry trends, and demand conditions.",
+      "reference": "Unit 3, Session 2 Market Analysis Section",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Which party provides initial training and ongoing support in a franchising relationship?",
+      "options": [
+        "Both",
+        "Neither",
+        "Only the franchisee",
+        "Only the franchisor"
+      ],
+      "correctAnswer": "D",
+      "why": "The franchisor supplies training, systems, brand support, and operational guidance to the franchisee.",
+      "reference": "Unit 2, Session 6 Franchising Relationship",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Anything or any quality that is useful is referred to as ______.",
+      "options": [
+        "Assets",
+        "Equipment",
+        "Raw material",
+        "Resource"
+      ],
+      "correctAnswer": "D",
+      "why": "A resource is anything useful that helps achieve business objectives, whether tangible or intangible.",
+      "reference": "Unit 2, Session 4 - Meaning of Resources",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Which of the following is not a characteristic of entrepreneurial resources?",
+      "options": [
+        "Market exists for them",
+        "They are always available",
+        "They are consumed",
+        "They have value"
+      ],
+      "correctAnswer": "B",
+      "why": "Resources are scarce, valuable, and often consumed, but they are not always available.",
+      "reference": "Unit 2, Session 4 - Characteristics of Resources",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "All the following are sources of generating entrepreneurial ideas except ______.",
+      "options": [
+        "Brainstorming session",
+        "Customer demands",
+        "Existing business",
+        "Research and development"
+      ],
+      "correctAnswer": "A",
+      "why": "Brainstorming is a method, not a source. Sources include customers, firms, and R&D.",
+      "reference": "Unit 2, Session 2 - Sources of Business Ideas",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "How does a buy-out differ from a buy-in? A buy-out ______.",
+      "options": [
+        "involves external investors",
+        "is when current managers/employees purchase the business",
+        "means buying part only",
+        "involves government"
+      ],
+      "correctAnswer": "B",
+      "why": "A buy-out occurs when existing managers or employees acquire the firm, while a buy-in involves outsiders joining ownership.",
+      "reference": "Unit 2, Session 5 - Buy-In and Buy-Out",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Entrepreneurs with a high need for achievement tend to ______.",
+      "options": [
+        "Avoid challenges",
+        "Prefer routine",
+        "Set challenging but attainable goals",
+        "Set easy goals"
+      ],
+      "correctAnswer": "C",
+      "why": "High need for achievement pushes entrepreneurs to pursue moderate, realistic, challenging targets.",
+      "reference": "Unit 1, Session 2 - Need for Achievement",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "The components of the entrepreneurial process are, entrepreneur, ______.",
+      "options": [
+        "ideas, resource and opportunity",
+        "opportunity, finance and resources",
+        "opportunity, resource and organization",
+        "opportunity, resource and profit"
+      ],
+      "correctAnswer": "C",
+      "why": "The entrepreneurial process links the entrepreneur, opportunity, resources, and organization.",
+      "reference": "Unit 1, Session 4 - Entrepreneurial Process",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "What is a key characteristic of serial entrepreneurs compared to novice entrepreneurs?",
+      "options": [
+        "Lack of innovation",
+        "Limited risk tolerance",
+        "Multiple business experiences",
+        "Singular focus"
+      ],
+      "correctAnswer": "C",
+      "why": "A serial entrepreneur starts and owns several ventures over time, unlike novices who are first-timers.",
+      "reference": "Unit 1, Session 2 - Serial Entrepreneurs",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Miss Eunice Agyei's movement from politics into business represents which sociological perspective?",
+      "options": [
+        "Between Things",
+        "Negative Displacement",
+        "Perception of desirability",
+        "Positive push"
+      ],
+      "correctAnswer": "A",
+      "why": "Between things describes people in transition who are not settled in previous roles and turn to entrepreneurship.",
+      "reference": "Unit 1, Session 3 - Sociological Perspectives (Between Things)",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Which of the following is a primary goal of brainstorming in entrepreneurship?",
+      "options": [
+        "Critique immediately",
+        "Generate many diverse ideas",
+        "Limit participants",
+        "Select first idea"
+      ],
+      "correctAnswer": "B",
+      "why": "Brainstorming focuses on quantity and variety of ideas before evaluation.",
+      "reference": "Unit 2, Session 2 - Brainstorming Technique",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "What source of entrepreneurial ideas involves purchasing rights to operate a proven model?",
+      "options": [
+        "Corporations",
+        "Customers",
+        "Existing businesses",
+        "Franchises"
+      ],
+      "correctAnswer": "D",
+      "why": "Franchising allows entrepreneurs to buy into a tested brand and operating system.",
+      "reference": "Unit 2, Session 6 - Franchising",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "What is a potential drawback of franchising to the franchisees?",
+      "options": [
+        "Brand recognition",
+        "Flexibility",
+        "Limited control",
+        "Reduced support"
+      ],
+      "correctAnswer": "C",
+      "why": "Franchisees must follow franchisor rules, leading to less autonomy in decisions.",
+      "reference": "Unit 2, Session 6 - Disadvantages of Franchising",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Which of the following is not a financial resource?",
+      "options": [
+        "Cash",
+        "Debtors",
+        "Creditors",
+        "Overdraft"
+      ],
+      "correctAnswer": "C",
+      "why": "Creditors are liabilities, not resources. Cash, debtors, and overdraft facilities provide finance.",
+      "reference": "Unit 2, Session 4 - Financial Resources",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Which resources are intangible? I. Innovation and ideas II. Human resources III. Quality of product IV. Equipment and location V. Brand names and knowledge",
+      "options": [
+        "I and V",
+        "I, II and V",
+        "I, II, III and V",
+        "I, III and V"
+      ],
+      "correctAnswer": "B",
+      "why": "Intangibles include ideas, people\u2019s skills, brand, and knowledge. Equipment/location are tangible.",
+      "reference": "Unit 2, Session 4 - Tangible vs Intangible Resources",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "How many respondents typically make up a focus group?",
+      "options": [
+        "5 to 11",
+        "6 to 12",
+        "7 to 13",
+        "8 to 14"
+      ],
+      "correctAnswer": "D",
+      "why": "A focus group normally contains about 8 to 14 participants for effective interaction and control.",
+      "reference": "Unit 2, Session 2 - Focus Groups",
+      "academicYear": "Semester I Quiz I, 2024/2025"
+    }
+  ]
+};
+
+const projectManagementQuestions = {
+  "Semester I Quiz I, 2019/2020": [
+    {
+      "question": "Which of the following statement(s) best describe the nature of a project? I. It is commenced and never completed II. The duration is short III. The outcome created by the project is automatically short IV. Outcome is unique",
+      "options": {
+        "A": "I and II only",
+        "B": "II only",
+        "C": "III and IV only",
+        "D": "IV only"
+      },
+      "correctAnswer": "D",
+      "explanation": "A project is temporary, but not necessarily short, and it must be completed. Also, the outcome is not automatically short-lived. The key defining feature of a project is that it produces a unique output (product, service, or result). I wrong \u2013 projects end. II wrong \u2013 projects can be long-term. III wrong \u2013 outcomes can be permanent. IV correct \u2013 projects produce unique outcomes.",
+      "reference": "Unit 1, Session 1 \u2013 Meaning and Characteristics of a Project",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Which of the following circumstances will mark the end of a project?",
+      "options": {
+        "A": "When a new product is developed",
+        "B": "When safety and risk controls are addressed",
+        "C": "When the project is considered as a temporal one",
+        "D": "When the project is considered as a temporary one"
+      },
+      "correctAnswer": "D",
+      "explanation": "Projects are temporary endeavours with a defined beginning and end. Once objectives are met (or abandoned), the project ends. Only option D reflects the defining nature of a project.",
+      "reference": "Unit 1, Session 2 \u2013 Project Life Cycle",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "The following are considered as importance of a project, EXCEPT ______.",
+      "options": {
+        "A": "increasing complex and technical products",
+        "B": "increasing economic periods",
+        "C": "making activities in the project shorter than expected",
+        "D": "realizing the concerns of shareholders"
+      },
+      "correctAnswer": "B",
+      "explanation": "Projects help manage complexity, shorten delivery time, and meet stakeholder needs. \u201cIncreasing economic periods\u201d is not an importance of projects.",
+      "reference": "Unit 1, Session 3 \u2013 Importance of Project Management",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Which of the following activities is the last step to undertake in managing projects?",
+      "options": {
+        "A": "Addressing stakeholder needs",
+        "B": "Balancing competing constraints",
+        "C": "Identification of requirements",
+        "D": "Setting up communication"
+      },
+      "correctAnswer": "B",
+      "explanation": "After identification of requirements, addressing stakeholder needs and setting up communication, the final concern is balancing competing constraints.",
+      "reference": "Unit 1, Session 6 \u2013 Nature of Projects and Project Management",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "The three most important traditional constraints of project management referred to as the triple constraints consists of ______.",
+      "options": {
+        "A": "budget, schedule and scope",
+        "B": "standards, risk and time",
+        "C": "scope, efficiency and effectiveness",
+        "D": "quality, standards and scope"
+      },
+      "correctAnswer": "A",
+      "explanation": "The classic triple constraint is: Scope Time (Schedule) Cost (Budget)",
+      "reference": "Unit 1, Session 4 \u2013 Project Constraints",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Which best describes competencies required by project managers in order to achieve effective project management?",
+      "options": {
+        "A": "Knowledge, performance and personal",
+        "B": "Leadership, team building and motivational",
+        "C": "Communication, influencing and decision making",
+        "D": "Political, cultural awareness and trust"
+      },
+      "correctAnswer": "A",
+      "explanation": "Project manager competencies are grouped into: Knowledge Performance Personal behaviour",
+      "reference": "Unit 1, Session 5 \u2013 Project Manager Competencies",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Which of the following is NOT considered a stakeholder of a project?",
+      "options": {
+        "A": "Customers",
+        "B": "End-users",
+        "C": "Contractors",
+        "D": "Project rivals"
+      },
+      "correctAnswer": "D",
+      "explanation": "Stakeholders are people who affect or are affected by the project. Rivals are external competitors, not participants in the project.",
+      "reference": "Unit 5, Session 1 \u2013 Stakeholder Identification",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Disagreement on issues concerning the project through which parties involved perceive it as a threat to their needs, interests or concerns are referred to as ______.",
+      "options": {
+        "A": "communication conflicts",
+        "B": "decision",
+        "C": "rivalry",
+        "D": "rivals"
+      },
+      "correctAnswer": "A",
+      "explanation": "Conflict arises when parties see issues as threats to their interests, and in projects this is mainly communication conflict.",
+      "reference": "Unit 4, Session 3 \u2013 Conflict in Project Teams",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Project vision conflicts arises when workers do not work efficiently due to differences.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "B",
+      "explanation": "Different values, goals, and perceptions create vision conflicts, reducing efficiency.",
+      "reference": "Unit 4, Session 3 \u2013 Types of Conflict",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "An approach where a party either physically or psychologically removes himself/herself from the conflict is called ______.",
+      "options": {
+        "A": "accommodation",
+        "B": "avoidance",
+        "C": "collaboration",
+        "D": "compromise"
+      },
+      "correctAnswer": "B",
+      "explanation": "Avoidance means physically or psychologically withdrawing from conflict.",
+      "reference": "Unit 4, Session 4 \u2013 Conflict Resolution Styles",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "When parties to a conflict coming to an agreement through yielding or conforming to the positions of others, cooperation in an effort to create harmony, even at the expense of their own ideas and values, which of the following best describes the conflict resolution approach adopted?",
+      "options": {
+        "A": "Accommodation",
+        "B": "Competition",
+        "C": "Compromise",
+        "D": "Collaboration"
+      },
+      "correctAnswer": "A",
+      "explanation": "Accommodation sacrifices personal views to maintain harmony.",
+      "reference": "Unit 4, Session 4 \u2013 Conflict Resolution Approaches",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "The phase of Project Life cycle which involves the development of detailed plans to confirm the specifications in the project scope defined as the initial phase is referred to as ______.",
+      "options": {
+        "A": "execution",
+        "B": "initiation",
+        "C": "planning",
+        "D": "closure"
+      },
+      "correctAnswer": "C",
+      "explanation": "Planning develops schedules, scope, budgets, and specifications.",
+      "reference": "Unit 1, Session 5 \u2013 Project Life Cycle Phases",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Which of the following types of project termination occurs when the needed resources to execute the projects by the project organization is lacking or inadequate?",
+      "options": {
+        "A": "Addition",
+        "B": "Extinction",
+        "C": "Integration",
+        "D": "Starvation"
+      },
+      "correctAnswer": "D",
+      "explanation": "Starvation happens when resources are withdrawn until the project dies.",
+      "reference": "Unit 5, Session 4 \u2013 Project Termination",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Which following is NOT considered as a cause of project delays?",
+      "options": {
+        "A": "Closure",
+        "B": "Scope change",
+        "C": "Design errors",
+        "D": "Deliberate action"
+      },
+      "correctAnswer": "A",
+      "explanation": "Closure ends a project, it does not delay it. Others create delays.",
+      "reference": "Unit 3, Session 4 \u2013 Causes of Project Delays",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Project cost associated with hiring and paying the various classification of workers involved in developing the project is classified as a service cost.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "B",
+      "explanation": "Labour costs are classified as service costs.",
+      "reference": "Unit 2, Session 1 \u2013 Project Cost Classification",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Indirect cost associated with the project include the following EXCEPT ______.",
+      "options": {
+        "A": "advertising",
+        "B": "depreciation",
+        "C": "insurance",
+        "D": "materials"
+      },
+      "correctAnswer": "D",
+      "explanation": "Materials are direct costs, not indirect.",
+      "reference": "Unit 2, Session 2 \u2013 Direct and Indirect Costs",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Unplanned costs incurred when steps are taken to speed up the project's completion and referred to as ______.",
+      "options": {
+        "A": "expedited costs",
+        "B": "fixed costs",
+        "C": "variable costs",
+        "D": "normal costs"
+      },
+      "correctAnswer": "A",
+      "explanation": "Expedited costs arise when accelerating project activities.",
+      "reference": "Unit 2, Session 3 \u2013 Cost Behaviour",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Business angels, are examples of short-term project funding sources.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "A",
+      "explanation": "Business angels provide long-term investment, not short-term funding.",
+      "reference": "Unit 2, Session 4 \u2013 Project Funding Sources",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Which of the following is NOT an example of long-term sources of project funding?",
+      "options": {
+        "A": "Venture Capital",
+        "B": "Bank overdraft",
+        "C": "Retained Profits",
+        "D": "Share Capital"
+      },
+      "correctAnswer": "B",
+      "explanation": "Bank overdrafts are short-term financing tools.",
+      "reference": "Unit 2, Session 4 \u2013 Long-term Funding",
+      "year": "Semester I Quiz I, 2019/2020"
+    },
+    {
+      "question": "Which of the classification of procurement risk management are influenced by factors such as seasonality, taxation, products availability and price?",
+      "options": {
+        "A": "Disruption risks",
+        "B": "Demand fluctuation",
+        "C": "Uncertain lead time",
+        "D": "Unreliable yield"
+      },
+      "correctAnswer": "B",
+      "explanation": "Seasonality, taxes, and price changes affect demand fluctuations in procurement.",
+      "reference": "Unit 2, Session 6 \u2013 Procurement Risk Management",
+      "year": "Semester I Quiz I, 2019/2020"
+    }
+  ],
+  "Semester I Quiz I, 2020/2021": [
+    {
+      "question": "The responsibilities of the project manager at the organisational level includes the following, except ______.",
+      "options": {
+        "A": "Controlling budgets",
+        "B": "Creating overall project plan and forms project team members",
+        "C": "Linking between the strategy and project team",
+        "D": "Sharing progress reports with the sponsors and all stakeholders"
+      },
+      "correctAnswer": "B",
+      "explanation": "At the organisational level, the project manager links the project to strategy, controls resources, and reports to sponsors. Forming the project team and creating detailed plans belong more to the project/team or operational level, not the organisational level. So B is the exception.",
+      "reference": "Unit 1, Session 5 & 6 \u2013 Roles and Responsibilities of the Project Manager",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which of the following best describe the interpersonal skills required by project managers? i. Leadership ii. Team building iii. Communication iv. Building trust",
+      "options": {
+        "A": "I only",
+        "B": "I and II only",
+        "C": "I, II, III only",
+        "D": "I, II, III and IV"
+      },
+      "correctAnswer": "D",
+      "explanation": "Interpersonal skills include leadership, team building, communication, and trust building. All four are core people-skills of a project manager.",
+      "reference": "Unit 4, Session 1 \u2013 Interpersonal Skills of the Project Manager",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Project vision conflicts arise due to the differences in stakeholders' opinion and understanding of the overall outcome of the project.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "B",
+      "explanation": "Vision conflicts come from differences in values, goals, and perceptions of project outcomes among stakeholders.",
+      "reference": "Unit 4, Session 3 \u2013 Types of Conflict",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "The conflict resolution approach where the person involved either physically or psychologically removes himself or herself from the conflict is referred to as ______.",
+      "options": {
+        "A": "Accommodation",
+        "B": "Avoidance",
+        "C": "Compromise",
+        "D": "Competition"
+      },
+      "correctAnswer": "B",
+      "explanation": "Avoidance means withdrawing from the conflict instead of confronting it.",
+      "reference": "Unit 4, Session 4 \u2013 Conflict Resolution Styles",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which of the following is a key feature of the second phase of the project life cycle?",
+      "options": {
+        "A": "A business case is made for the project",
+        "B": "Activities are outlined",
+        "C": "Opportunities are identified",
+        "D": "Monitoring and controlling deliverables"
+      },
+      "correctAnswer": "B",
+      "explanation": "The second phase is Planning. In planning, project activities are identified, sequenced, and scheduled. Business case \u2192 Initiation Opportunities \u2192 Concept stage Monitoring \u2192 Execution/Control",
+      "reference": "Unit 1, Session 2 \u2013 Project Life Cycle",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which of the following factors is said to influence demand fluctuation?",
+      "options": {
+        "A": "Disruption",
+        "B": "Seasonality",
+        "C": "Uncertain lead time",
+        "D": "Vague price information"
+      },
+      "correctAnswer": "B",
+      "explanation": "Demand fluctuates because of seasonality, taxation, price changes, and market trends. Seasonality is the direct driver here.",
+      "reference": "Unit 2, Session 6 \u2013 Procurement Risk Classification",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which best describes the consequences when project scope is incompletely defined?",
+      "options": {
+        "A": "Leads to schedule slips and cost overruns",
+        "B": "Leads to unnecessary work and confusion",
+        "C": "Results in scope creep",
+        "D": "Results in misrepresentation in requirements and design"
+      },
+      "correctAnswer": "A",
+      "explanation": "Incomplete scope causes wrong estimates, rework, and changes, which directly lead to schedule delays and cost overruns.",
+      "reference": "Unit 3, Session 1 \u2013 Scope Management Problems",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Ambiguity in scope management often leads to ______.",
+      "options": {
+        "A": "unnecessary work and confusion",
+        "B": "scope creep",
+        "C": "misrepresentation in requirements and design",
+        "D": "schedule slips"
+      },
+      "correctAnswer": "A",
+      "explanation": "Ambiguous scope makes people unsure about responsibilities, causing confusion and unnecessary activities.",
+      "reference": "Unit 3, Session 2 \u2013 Scope Definition Issues",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Project scope that is not collaboratively prepared often results in ______.",
+      "options": {
+        "A": "unnecessary work and confusion",
+        "B": "scope creep",
+        "C": "misrepresentation in requirements and design",
+        "D": "schedule slips"
+      },
+      "correctAnswer": "C",
+      "explanation": "When scope is not developed jointly, stakeholder needs are misunderstood, leading to misrepresentation of requirements and design.",
+      "reference": "Unit 3, Session 2 \u2013 Collaborative Scope Planning",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Being transient in project scope definition often leads to ______.",
+      "options": {
+        "A": "unnecessary work and confusion",
+        "B": "scope creep",
+        "C": "misrepresentation in requirements and design",
+        "D": "schedule slips"
+      },
+      "correctAnswer": "B",
+      "explanation": "Transient (unstable) scope keeps changing, which leads to scope creep.",
+      "reference": "Unit 3, Session 3 \u2013 Scope Control and Scope Creep",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which of the following examples of the daily life of a typical organization can be likened to a project? i. Organising a street carnival ii. Organising a short-term advertisement iii. Undertaking an activity with a unique outcome iv. Trying to stay in existence in perpetuity",
+      "options": {
+        "A": "I and IV only",
+        "B": "II only",
+        "C": "I, II and III only",
+        "D": "II, III and IV only"
+      },
+      "correctAnswer": "C",
+      "explanation": "Projects are temporary and unique. I, II, and III meet that definition. IV is ongoing operations, not a project.",
+      "reference": "Unit 1, Session 1 \u2013 Characteristics of a Project",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which of the following is an example of an active stakeholder of a project?",
+      "options": {
+        "A": "Competitors",
+        "B": "Persons indirectly affected",
+        "C": "Project coordinators",
+        "D": "Public authorities"
+      },
+      "correctAnswer": "C",
+      "explanation": "Active stakeholders directly participate in project execution, such as project coordinators.",
+      "reference": "Unit 5, Session 1 \u2013 Stakeholder Classification",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which of the following is generally considered a project?",
+      "options": {
+        "A": "Organisation trying to stay afloat",
+        "B": "Conducting research with recorded outcome",
+        "C": "Managing a product",
+        "D": "Protecting sales territory"
+      },
+      "correctAnswer": "B",
+      "explanation": "Research has a clear start, end, and unique outcome, making it a project.",
+      "reference": "Unit 1, Session 1 \u2013 Examples of Projects",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Scope, cost and risk are the most important traditional constraints of project management.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "A",
+      "explanation": "The traditional triple constraint is Scope, Time, and Cost, not risk.",
+      "reference": "Unit 1, Session 4 \u2013 Triple Constraint",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Project termination type where the needed resources to execute the project and either lacking or inadequately available is referred to as ______.",
+      "options": {
+        "A": "Project starvation",
+        "B": "Termination by extinction",
+        "C": "Termination by addition",
+        "D": "Termination by integration"
+      },
+      "correctAnswer": "A",
+      "explanation": "Starvation happens when resources are slowly withdrawn until the project stops.",
+      "reference": "Unit 5, Session 4 \u2013 Project Termination Types",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Total labour cost of a project is realized by ______.",
+      "options": {
+        "A": "adding all labour costs",
+        "B": "dividing overhead with direct labour",
+        "C": "multiplying direct labour rate by total labour hours",
+        "D": "multiplying salaries with hours"
+      },
+      "correctAnswer": "C",
+      "explanation": "Labour cost = labour rate \u00d7 total labour hours.",
+      "reference": "Unit 2, Session 1 \u2013 Labour Cost Estimation",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Which of the following are examples of short-term project funding? i. Bank overdrafts ii. Loans iii. Sale and leaseback iv. Retained profit",
+      "options": {
+        "A": "I only",
+        "B": "I and II only",
+        "C": "II and III only",
+        "D": "I and IV only"
+      },
+      "correctAnswer": "A",
+      "explanation": "Bank overdraft is short-term. Loans, sale and leaseback, and retained profits are long-term.",
+      "reference": "Unit 2, Session 5 \u2013 Sources of Project Funding",
+      "year": "Semester I Quiz I, 2020/2021"
+    },
+    {
+      "question": "Obtaining information from prospective sellers on how project needs can be met is referred to as ______.",
+      "options": {
+        "A": "Procurement planning",
+        "B": "Project procurement",
+        "C": "Solicitation",
+        "D": "Source selection"
+      },
+      "correctAnswer": "C",
+      "explanation": "Solicitation is the process of requesting bids, quotations, and proposals from sellers.",
+      "reference": "Unit 2, Session 5 \u2013 Procurement Process",
+      "year": "Semester I Quiz I, 2020/2021"
+    }
+  ],
+  "Semester I Quiz I, 2021/2022": [
+    {
+      "question": "Which of the following are among the responsibilities of the project sponsor to the project board? I. Provide leadership on culture and values II. Ensures continuity of sponsorship III. Provide assurance, feedback and lessons learnt IV. Focus on realisation of project benefits and recommend opportunities to optimize cost",
+      "options": {
+        "A": "I only",
+        "B": "I and III only",
+        "C": "I, II, and III only",
+        "D": "I, II, III and IV"
+      },
+      "correctAnswer": "D",
+      "explanation": "A project sponsor: provides leadership and direction, ensures sponsorship continuity, offers assurance and feedback, and focuses on benefits realisation and cost optimisation. All four statements describe sponsor responsibilities.",
+      "reference": "Unit 1, Session 5 \u2013 Roles of the Project Sponsor and Board",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "At the organisational level, the project manager\u2019s responsibility includes managing project budgetary spend.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "B",
+      "explanation": "At organisational level, the project manager controls resources and manages budgetary expenditure to align with organisational strategy.",
+      "reference": "Unit 1, Session 5 \u2013 Organisational Responsibilities of the Project Manager",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "A project vision conflict arises when ______.",
+      "options": {
+        "A": "there are differences in stakeholders\u2019 opinion and understanding of the overall outcome of the project",
+        "B": "two different workers do not work efficiently",
+        "C": "workers are unable to work as team players",
+        "D": "project members misapply project requirement due to ineffective communication"
+      },
+      "correctAnswer": "A",
+      "explanation": "Vision conflict occurs when stakeholders disagree on goals, values, and expected outcomes of the project.",
+      "reference": "Unit 4, Session 3 \u2013 Project Vision Conflict",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "A conflict resolution approach which involves physical or psychological removing oneself from the conflict is referred to as _________. A) Avoidance B) Accommodation C) Compromise D) Collaboration",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "A",
+      "explanation": "Avoidance means withdrawing from the conflict instead of engaging with it.",
+      "reference": "Unit 4, Session 4 \u2013 Conflict Resolution Styles",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which of the following is a characteristic of the project initiation cycle stage? A) Detailed plan to confirm the specifications in the project scope is developed B) Business problem or opportunity is identified C) Final deliverables are released to the customer D) Project resources are reintegrated within the organisation\u2019s structure",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "B",
+      "explanation": "Initiation focuses on identifying a business problem or opportunity and authorising the project. A \u2192 Planning C \u2192 Closure D \u2192 Closure",
+      "reference": "Unit 1, Session 2 \u2013 Project Life Cycle: Initiation",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Bank overdrafts and loans are examples of short-term project funding. A) False B) True",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "A",
+      "explanation": "Bank overdraft \u2192 short-term Loans \u2192 generally long-term So the statement is incorrect.",
+      "reference": "Unit 2, Session 4 \u2013 Sources of Project Finance",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "When parties to a conflict coming to an agreement through yielding or conforming to the positions of others, cooperation in an effort to create harmony, even at the expense of their own ideas and values, which of the following best describes the conflict resolution approach adopted? A) Accommodation B) Competition C) Compromise D) Collaboration",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "A",
+      "explanation": "Accommodation involves sacrificing personal views to maintain harmony.",
+      "reference": "Unit 4, Session 4 \u2013 Conflict Resolution Approaches",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "The phase of project life cycle which involves the development of detailed plans to confirm the specifications in the project scope defined at the initial phase is referred to as A) Execution B) Initiation C) Planning D) Closure",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "C",
+      "explanation": "Planning converts ideas into detailed schedules, budgets, scope and specifications.",
+      "reference": "Unit 1, Session 2 \u2013 Project Life Cycle: Planning",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which off the classification of procurement risk is influenced by factors such as seasonality, taxation, product availability and price? A) Disruption risks B) Demand fluctuation C) Uncertain lead time D) Unreliable yield",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "B",
+      "explanation": "These factors directly affect market demand behaviour, causing demand fluctuation.",
+      "reference": "Unit 2, Session 6 \u2013 Procurement Risk Management",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which of the following is not considered as a cause of project delays?",
+      "options": {
+        "A": "Closure",
+        "B": "Scope change",
+        "C": "Design errors",
+        "D": "Deliberate action"
+      },
+      "correctAnswer": "A",
+      "explanation": "Closure ends a project. Scope change, errors and deliberate actions create delays.",
+      "reference": "Unit 3, Session 4 \u2013 Causes of Project Delays",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which of the following is true about projects? I. Every project has a specific starting and ending points II. The duration of projects is perpetual III. Projects are permanent in nature IV. The lifecycle of the product, servicer or outcome created by the project is automatically short",
+      "options": {
+        "A": "I, and II",
+        "B": "I and IV",
+        "C": "III and IV",
+        "D": "II and III"
+      },
+      "correctAnswer": "B",
+      "explanation": "Let\u2019s test each statement. I. Every project has a specific starting and ending points - True. A project is temporary. It always has a defined beginning and end. II. The duration of projects is perpetual - False. Perpetual means endless. Projects are not ongoing operations. III. Projects are permanent in nature - False. Projects are temporary, not permanent. IV. The lifecycle of the product, service or outcome created by the project is automatically short Strictly speaking, this sentence is poorly worded. A project\u2019s output may last long, but the project itself is short-lived. However, in UCC exams, statement IV is usually interpreted to mean that the project activity is temporary, not the product\u2019s existence. So, in exam logic, IV is treated as acceptable, making the only viable option: I and IV Projects are temporary. Projects have defined start and end dates. Projects produce unique outcomes. Therefore: Option B is correct.",
+      "reference": "Unit 1, Session 2 \u2013 Nature and Characteristics of Projects",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which of the following is an example of a project? I. Developing a new product II. Introducing new product to a new market III. Conducting research IV. Developing a new information system",
+      "options": {
+        "A": "I only",
+        "B": "I, II only",
+        "C": "I, II, and III only",
+        "D": "I, II, III and IV"
+      },
+      "correctAnswer": "D",
+      "explanation": "All four involve temporary work with unique outcomes, which defines a project.",
+      "reference": "Unit 1, Session 1 \u2013 Examples of Projects",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "An active stakeholder of a project includes the following except?",
+      "options": {
+        "A": "Public authorities",
+        "B": "Project coordinator",
+        "C": "Project manager",
+        "D": "Project team"
+      },
+      "correctAnswer": "A",
+      "explanation": "Public authorities are usually external/passive stakeholders, while the others are directly involved in execution.",
+      "reference": "Unit 5, Session 1 \u2013 Stakeholder Classification",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which is the initial step that must be taken when managing a project?",
+      "options": {
+        "A": "Addressing stakeholder concerns",
+        "B": "Balancing competing constraints",
+        "C": "Identification of project requirements or needs",
+        "D": "Setting up communications"
+      },
+      "correctAnswer": "C",
+      "explanation": "Management begins by identifying the project need or requirement before planning and execution.",
+      "reference": "Unit 1, Session 3 \u2013 Project Management Process",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Which are the three most important traditional constraints of project management?",
+      "options": {
+        "A": "Time, schedule and cost",
+        "B": "Time, budget and scope",
+        "C": "Cost, budget and scope",
+        "D": "Schedule, budget and cost"
+      },
+      "correctAnswer": "B",
+      "explanation": "The triple constraint is: Time Cost (Budget) Scope",
+      "reference": "Unit 1, Session 4 \u2013 Triple Constraint",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "A project termination type where the resources needed by the project organization or by the project manager to execute the project is lacking or inadequate or unavailable is referred to as termination by ______.",
+      "options": {
+        "A": "starvation",
+        "B": "extinction",
+        "C": "addition",
+        "D": "integration"
+      },
+      "correctAnswer": "A",
+      "explanation": "Starvation occurs when funding or resources are gradually withdrawn until the project stops.",
+      "reference": "Unit 5, Session 4 \u2013 Project Termination Types",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Total direct labour cost is calculated as ______.",
+      "options": {
+        "A": "The product of direct labour rate and total labour hours",
+        "B": "Total fixed cost multiplied by labour rate",
+        "C": "Market analysis \u00d7 labour cost",
+        "D": "Sales cost + logistics + labour"
+      },
+      "correctAnswer": "A",
+      "explanation": "Labour cost = labour rate \u00d7 labour hours.",
+      "reference": "Unit 2, Session 1 \u2013 Labour Cost Estimation",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Project variable cost accelerate or very throughout the Project Life cycle whereas project fixed cost does not vary with respect to their usage throughout the project life cycle.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "B",
+      "explanation": "Variable costs change with activity levels; fixed costs remain constant.",
+      "reference": "Unit 2, Session 3 \u2013 Fixed and Variable Costs",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "Advertising, shipping, salaries and insurance are examples of ______.",
+      "options": {
+        "A": "Accelerated cost",
+        "B": "Corporate cost",
+        "C": "Direct cost",
+        "D": "Overhead cost"
+      },
+      "correctAnswer": "D",
+      "explanation": "These support the project indirectly and are not tied to one task, so they are overhead/indirect costs.",
+      "reference": "Unit 2, Session 2 \u2013 Overhead Costs",
+      "year": "Semester I Quiz I, 2021/2022"
+    },
+    {
+      "question": "The process of aggregating the estimated cost of individual activities or work packages to establish an authorized cost-based line of which project expenditures will be measured against it referred to as ______.",
+      "options": {
+        "A": "Project cost control",
+        "B": "Project cost budgeting",
+        "C": "Project cost estimating",
+        "D": "Project overheads"
+      },
+      "correctAnswer": "B",
+      "explanation": "Cost budgeting combines individual estimates into an authorised cost baseline.",
+      "reference": "Unit 2, Session 2 \u2013 Cost Budgeting Process",
+      "year": "Semester I Quiz I, 2021/2022"
+    }
+  ],
+  "Semester I Quiz I, 2022/2023": [
+    {
+      "question": "Which of the following examples of the daily life of a typical organisation can be likened to a project? I. A company organising a street carnival within a short period II. An organisation organising a field advertisement within a few days III. An organisation undertaking an activity that possesses a unique outcome IV. An organisation trying to stay in existence in perpetuity",
+      "options": {
+        "A": "I and IV only",
+        "B": "II only",
+        "C": "I and III only",
+        "D": "II and IV only"
+      },
+      "correctAnswer": "C",
+      "explanation": "A project is temporary and unique. I. temporary and unique - True II. can be routine promotion - False III. unique outcome - True IV. ongoing operations - False So I and III best describe projects.",
+      "reference": "Unit 1, Session 1 \u2013 Meaning and Characteristics of a Project",
+      "year": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Which of the following best describes the interpersonal skills required by project managers? I. Leadership II. Team building III. Communication IV. Building trust",
+      "options": {
+        "A": "I only",
+        "B": "I and II only",
+        "C": "I, II, III only",
+        "D": "I, II, III and IV"
+      },
+      "correctAnswer": "D",
+      "explanation": "Interpersonal skills include leadership, team building, communication, and trust building.",
+      "reference": "Unit 4, Session 1 \u2013 Interpersonal Skills of the Project Manager",
+      "year": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Which of the following are examples of short-term project funding? I. Bank overdrafts II. Loans III. Sale and leaseback IV. Retained profit",
+      "options": {
+        "A": "I only",
+        "B": "I and II only",
+        "C": "II and III only",
+        "D": "I and IV only"
+      },
+      "correctAnswer": "A",
+      "explanation": "Bank overdraft = short-term Loans = long-term Sale and leaseback = long-term Retained profit = long-term",
+      "reference": "Unit 2, Session 4 \u2013 Sources of Project Finance",
+      "year": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Which of the following is TRUE about projects? I. Every project has specific starting and ending points II. The duration of projects is perpetual III. Projects are permanent in nature IV. The lifecycle of the outcome is automatically short",
+      "options": {
+        "A": "I, and II",
+        "B": "I and IV",
+        "C": "III and IV",
+        "D": "II and III"
+      },
+      "correctAnswer": "B",
+      "explanation": "I is true II is not true (projects are temporary) III is not true (projects are not permanent) IV is true (outputs are sometimes short-term)",
+      "reference": "Unit 1, Session 1 \u2013 Characteristics of Projects",
+      "year": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Which type of project termination occurs when needed resources are lacking or inadequate?",
+      "options": {
+        "A": "Addition",
+        "B": "Extinction",
+        "C": "Starvation",
+        "D": "Integration"
+      },
+      "correctAnswer": "C",
+      "explanation": "Starvation happens when funding or resources are gradually withdrawn until the project stops.",
+      "reference": "Unit 5, Session 4 \u2013 Types of Project Termination",
+      "year": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Which of the following is not considered a cause of project delays?",
+      "options": {
+        "A": "Closure",
+        "B": "Scope change",
+        "C": "Design errors",
+        "D": "Deliberate action"
+      },
+      "correctAnswer": "A",
+      "explanation": "Closure ends a project, it does not delay it. Others cause delays.",
+      "reference": "Unit 3, Session 4 \u2013 Causes of Project Delays",
+      "year": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Project cost associated with hiring and paying the various classification of workers involved in developing the project is classified as service cost.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "B",
+      "explanation": "Labour cost is treated as service cost in project costing.",
+      "reference": "Unit 2, Session 1 \u2013 Classification of Project Costs",
+      "year": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "The indirect cost associated with a project includes the following except:",
+      "options": {
+        "A": "Advertising",
+        "B": "Depreciation of equipment",
+        "C": "Insurance",
+        "D": "Materials"
+      },
+      "correctAnswer": "D",
+      "explanation": "Materials are direct costs, while the others are indirect/overhead.",
+      "reference": "Unit 2, Session 2 \u2013 Direct and Indirect Costs",
+      "year": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "A project vision conflict arises when ______.",
+      "options": {
+        "A": "there are differences in stakeholders\u2019 opinions and understanding of the overall outcome",
+        "B": "two different workers do not work efficiently",
+        "C": "workers are unable to work as team players",
+        "D": "project members misapply requirements"
+      },
+      "correctAnswer": "A",
+      "explanation": "Vision conflict comes from differences in goals, values, and understanding of outcomes.",
+      "reference": "Unit 4, Session 3 \u2013 Project Vision Conflict",
+      "year": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "A conflict resolution approach which involves physically or psychologically removing oneself from the conflict is referred to as ______.",
+      "options": {
+        "A": "Avoidance",
+        "B": "Accommodation",
+        "C": "Compromise",
+        "D": "Collaboration"
+      },
+      "correctAnswer": "A",
+      "explanation": "Avoidance means physically or psychologically withdrawing from conflict.",
+      "reference": "Unit 4, Session 4 \u2013 Conflict Resolution Styles",
+      "year": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Total direct labour cost is calculated as ______.",
+      "options": {
+        "A": "The product of direct labour rate and total labour hours",
+        "B": "Total fixed cost \u00d7 labour rate",
+        "C": "Market analysis \u00d7 labour cost",
+        "D": "Sales cost + logistics + labour"
+      },
+      "correctAnswer": "A",
+      "explanation": "Labour cost = labour rate \u00d7 labour hours.",
+      "reference": "Unit 2, Session 1 \u2013 Labour Cost Estimation",
+      "year": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Project variable cost accelerates or varies throughout the Project Life cycle whereas project fixed cost does not vary with respect to their usage throughout the project life cycle.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "B",
+      "explanation": "Variable costs change with usage; fixed costs remain constant.",
+      "reference": "Unit 2, Session 3 \u2013 Fixed and Variable Costs",
+      "year": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "Advertising, shipping, salaries and insurance are examples of ______.",
+      "options": {
+        "A": "Accelerated cost",
+        "B": "Corporate cost",
+        "C": "Direct cost",
+        "D": "Overhead cost"
+      },
+      "correctAnswer": "D",
+      "explanation": "These support the project indirectly, so they are overhead (indirect) costs.",
+      "reference": "Unit 2, Session 2 \u2013 Overhead Costs",
+      "year": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "The process of aggregating the estimated cost of individual activities or web packages to establish an authorized cost-based line of which project expenditures will be measured is referred to as ______.",
+      "options": {
+        "A": "Project cost control",
+        "B": "Project cost budgeting",
+        "C": "Project cost estimating",
+        "D": "Project overheads"
+      },
+      "correctAnswer": "B",
+      "explanation": "Cost budgeting combines individual estimates into an authorised cost baseline.",
+      "reference": "Unit 2, Session 2 \u2013 Cost Budgeting",
+      "year": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "When parties to a conflict come to an agreement through yielding or conforming to the positions of others, cooperating in an effort to create harmony, even at the expense of their own ideas and values, which of the following best describes the conflict resolution approach adopted?",
+      "options": {
+        "A": "Accommodation",
+        "B": "Competition",
+        "C": "Compromise",
+        "D": "Collaboration"
+      },
+      "correctAnswer": "A",
+      "explanation": "Accommodation sacrifices personal views to maintain harmony.",
+      "reference": "Unit 4, Session 4 \u2013 Conflict Resolution Approaches",
+      "year": "Semester I Quiz I, 2022/2023"
+    },
+    {
+      "question": "The face of the Project Life cycle which involves the development of detailed plans to confirm the specifications in the project scope defined at the initial phase is referred to as ______.",
+      "options": {
+        "A": "Execution",
+        "B": "Initiation",
+        "C": "Planning",
+        "D": "Closure"
+      },
+      "correctAnswer": "C",
+      "explanation": "Planning develops schedules, budgets, scope and specifications.",
+      "reference": "Unit 1, Session 2 \u2013 Project Life Cycle Phases",
+      "year": "Semester I Quiz I, 2022/2023"
+    }
+  ],
+  "Semester I Quiz I, 2023/2024": [
+    {
+      "question": "Which of the following best describes the competencies required by project managers in order to achieve effective project management?",
+      "options": {
+        "A": "Knowledge, performance and personal",
+        "B": "Leadership, team building and motivational",
+        "C": "Communication, influencing and decision making",
+        "D": "Political, cultural awareness and trust"
+      },
+      "correctAnswer": "A",
+      "explanation": "Project manager competence is grouped into: Knowledge competence Performance competence Personal competence The other options are parts of these, but not the formal classification used in the text.",
+      "reference": "Unit 1, Session 5 \u2013 Project Manager Competencies",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Which of the following is NOT considered a stakeholder of a project?",
+      "options": {
+        "A": "Customers",
+        "B": "End users",
+        "C": "Contractors",
+        "D": "Project rivals"
+      },
+      "correctAnswer": "D",
+      "explanation": "Stakeholders are people who affect or are affected by the project. Customers, users and contractors participate in or benefit from the project. Project rivals are external competitors, not stakeholders in the project.",
+      "reference": "Unit 5, Session 1 \u2013 Stakeholder Identification",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Project vision conflict arises when two different groups of workers do not work efficiently due to their differences.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "B",
+      "explanation": "Vision conflicts come from differences in values, goals and perceptions, which reduce efficiency between groups.",
+      "reference": "Unit 4, Session 3 \u2013 Types of Conflict",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "An approach to conflict that involves a party to either physically or psychologically remove himself/herself from the conflict is referred to as ______.",
+      "options": {
+        "A": "Accommodation",
+        "B": "Avoidance",
+        "C": "Collaboration",
+        "D": "Compromise"
+      },
+      "correctAnswer": "B",
+      "explanation": "Avoidance means withdrawing from the conflict instead of confronting it.",
+      "reference": "Unit 4, Session 4 \u2013 Conflict Resolution Styles",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Obtaining information from prospective sellers on how projects needs can be met is referred to as ______.",
+      "options": {
+        "A": "Procurement planning",
+        "B": "Project procurement",
+        "C": "Solicitation",
+        "D": "Source selection"
+      },
+      "correctAnswer": "C",
+      "explanation": "Solicitation involves requesting bids, quotations and proposals from sellers.",
+      "reference": "Unit 2, Session 5 \u2013 Procurement Process",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Which of the following factors is said to influence demand fluctuation?",
+      "options": {
+        "A": "Disruption",
+        "B": "Seasonality",
+        "C": "Uncertain lead time",
+        "D": "Vague price information"
+      },
+      "correctAnswer": "B",
+      "explanation": "Demand changes due to seasonality, taxation, price changes and availability.",
+      "reference": "Unit 2, Session 6 \u2013 Procurement Risk Management",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Which of the following best describes the consequences one is likely to experience when project scope is incompletely defined?",
+      "options": {
+        "A": "Leads to schedule slips and cost overruns",
+        "B": "Leads to unnecessary work and confusion",
+        "C": "Results in scope creep",
+        "D": "Results in misrepresentation in requirements and design"
+      },
+      "correctAnswer": "A",
+      "explanation": "Incomplete scope causes wrong estimates and rework, leading to delays and cost overruns.",
+      "reference": "Unit 3, Session 1 \u2013 Scope Management Problems",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Ambiguity in scope management often results in ______.",
+      "options": {
+        "A": "unnecessary work and confusion",
+        "B": "scope creep",
+        "C": "misrepresentation in requirements and design",
+        "D": "Schedule slips"
+      },
+      "correctAnswer": "A",
+      "explanation": "Ambiguous scope creates uncertainty, leading to confusion and unnecessary activities.",
+      "reference": "Unit 3, Session 2 \u2013 Scope Definition Issues",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Being transient in project scope definition often results in ______.",
+      "options": {
+        "A": "unnecessary work and confusion",
+        "B": "scope creep",
+        "C": "misrepresentation in requirements and design",
+        "D": "schedule slips"
+      },
+      "correctAnswer": "B",
+      "explanation": "Unstable (transient) scope keeps changing, causing scope creep.",
+      "reference": "Unit 3, Session 3 \u2013 Scope Control and Scope Creep",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Which of the following statement(s) best describes the nature of a project? I. It is commenced and never completed. II. The duration is short. III. The outcome created by the project is automatically short. IV. Outcome is unique.",
+      "options": {
+        "A": "I and II only",
+        "B": "II only",
+        "C": "III and IV only",
+        "D": "IV only"
+      },
+      "correctAnswer": "D",
+      "explanation": "A project: must end so I is false is not always short so II is false may have long-term outcomes so III is also false produces a unique outcome so IV is correct Projects are temporary, unique and goal-oriented",
+      "reference": "Unit 1, Session 2 \u2013 Nature and Characteristics of Projects",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Which of the following circumstances will mark the end of a project?",
+      "options": {
+        "A": "Termination because objectives cannot be met",
+        "B": "When a new product is developed",
+        "C": "When safety and risk controls are addressed",
+        "D": "When the project is considered a temporal one"
+      },
+      "correctAnswer": "A",
+      "explanation": "A project ends when objectives are achieved or when it is terminated because objectives cannot be met.",
+      "reference": "Unit 1, Session 2 \u2013 Project Closure and Termination",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "The following are considered as importance of a project, except ______.",
+      "options": {
+        "A": "increasing complex and technical products",
+        "B": "increasing economic periods",
+        "C": "making activities in the project shorter than expected",
+        "D": "realizing the concerns of shareholders"
+      },
+      "correctAnswer": "B",
+      "explanation": "Projects help manage complexity, shorten work, and satisfy stakeholders. \u201cIncreasing economic periods\u201d is not an importance of projects.",
+      "reference": "Unit 1, Session 3 \u2013 Importance of Project Management",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Which of the following activities is the last step to undertake in managing projects?",
+      "options": {
+        "A": "Addressing stakeholders\u2019 needs",
+        "B": "Balancing competing constraints",
+        "C": "Identification of requirements",
+        "D": "Setting up communications"
+      },
+      "correctAnswer": "B",
+      "explanation": "After identification of requirements, addressing stakeholder needs and setting up communication, the final concern is balancing competing constraints.",
+      "reference": "Unit 1, Session 6 \u2013 Nature of Projects and Project Management",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "The three most important traditional constraints of project management referred to as the triple constraints consists of ______.",
+      "options": {
+        "A": "budget, schedule and scope",
+        "B": "standards, risk and time",
+        "C": "scope, efficiency and effectiveness",
+        "D": "quality, standards and scope"
+      },
+      "correctAnswer": "A",
+      "explanation": "The classic triple constraint is: Scope Time (Schedule) Cost (Budget)",
+      "reference": "Unit 1, Session 4 \u2013 Triple Constraint",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Project termination type where the needed resources to execute the projects are either lacking or inadequately available is referred to as ______.",
+      "options": {
+        "A": "Project starvation",
+        "B": "Termination by extinction",
+        "C": "Termination by addition",
+        "D": "Termination by integration"
+      },
+      "correctAnswer": "A",
+      "explanation": "Starvation occurs when funding or resources are withdrawn until the project dies.",
+      "reference": "Unit 5, Session 4 \u2013 Project Termination Types",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Advertising, shipping and utilities are examples of project overhead cost.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "B",
+      "explanation": "They support the project indirectly and are classified as overhead (indirect) costs.",
+      "reference": "Unit 2, Session 2 \u2013 Indirect and Overhead Costs",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Total labour cost of a project is realized by ______.",
+      "options": {
+        "A": "adding all cost associated with labour",
+        "B": "dividing overhead cost with direct labour cost",
+        "C": "multiplying direct labour rate by total labour hours",
+        "D": "multiplying salaries with total labour hours"
+      },
+      "correctAnswer": "C",
+      "explanation": "Labour cost = Labour rate \u00d7 Total labour hours.",
+      "reference": "Unit 2, Session 1 \u2013 Labour Cost Estimation",
+      "year": "Semester I Quiz I, 2023/2024"
+    },
+    {
+      "question": "Which of the following are examples of short-term project funding? I. Bank overdrafts II. Loans III. Sale and leaseback IV. Retained profit",
+      "options": {
+        "A": "I only",
+        "B": "I and II only",
+        "C": "II and III only",
+        "D": "I and IV only"
+      },
+      "correctAnswer": "A",
+      "explanation": "Bank overdraft is short-term Loans is long-term Sale & leaseback is long-term Retained profit is also long-term",
+      "reference": "Unit 2, Session 4 \u2013 Sources of Project Finance",
+      "year": "Semester I Quiz I, 2023/2024"
+    }
+  ],
+  "Semester I Quiz I, 2024/2025": [
+    {
+      "question": "Which of the following factors is said to influence demand fluctuation?",
+      "options": {
+        "A": "Disruption",
+        "B": "Seasonality",
+        "C": "Uncertain lead time",
+        "D": "Vague price information"
+      },
+      "correctAnswer": "B",
+      "explanation": "Demand fluctuates mainly because of seasonality, taxation, availability and pricing patterns. Among the options, only seasonality directly causes predictable changes in demand.",
+      "reference": "Unit 2, Session 6 \u2013 Procurement Risk and Demand Fluctuation",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Which of the following best describes the competencies required by project managers to achieve effective project management?",
+      "options": {
+        "A": "Knowledge, performance and personal",
+        "B": "Leadership, team building and motivational",
+        "C": "Communication, influencing and decision making",
+        "D": "Political, cultural awareness and trust"
+      },
+      "correctAnswer": "A",
+      "explanation": "The modules classifies project manager competence into: Knowledge competence Performance competence Personal competence The other options are elements, not the formal structure.",
+      "reference": "Unit 1, Session 5 \u2013 Project Manager Competencies",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Disagreement on issues concerning the project through which parties involved perceive it as a threat to their needs, interests or concerns are referred to as project ______.",
+      "options": {
+        "A": "Communication",
+        "B": "Conflicts",
+        "C": "Decision",
+        "D": "Rivals"
+      },
+      "correctAnswer": "B",
+      "explanation": "When project members perceive threats to their interests, it results in project conflict.",
+      "reference": "Unit 4, Session 3 \u2013 Conflict in Project Management",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Project vision conflicts arise when two different groups of workers do not work efficiently due to their differences.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "B",
+      "explanation": "Vision conflict comes from differences in goals, perceptions and values, which reduce cooperation and efficiency.",
+      "reference": "Unit 4, Session 3 \u2013 Types of Conflict",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "An approach to conflict that involves a party either physically or psychologically removing himself/herself from the conflict is referred to as ______.",
+      "options": {
+        "A": "Accommodation",
+        "B": "Avoidance",
+        "C": "Collaboration",
+        "D": "Compromise"
+      },
+      "correctAnswer": "B",
+      "explanation": "Avoidance means withdrawing from the conflict instead of addressing it directly.",
+      "reference": "Unit 4, Session 4 \u2013 Conflict Resolution Styles",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Which of the following tools is commonly used to track project delays?",
+      "options": {
+        "A": "Gantt charts",
+        "B": "Word documents",
+        "C": "Social media reports",
+        "D": "Personal notes"
+      },
+      "correctAnswer": "A",
+      "explanation": "Gantt charts visually show task schedules, progress, and slippages, making delays easy to track.",
+      "reference": "Unit 3, Session 4 \u2013 Scheduling Tools (Gantt Charts)",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "The process of determining the financial resources required for a project is called Cost ______.",
+      "options": {
+        "A": "budgeting",
+        "B": "estimation",
+        "C": "allocation",
+        "D": "tracking"
+      },
+      "correctAnswer": "B",
+      "explanation": "Cost estimation determines how much money the project will require before execution.",
+      "reference": "Unit 2, Session 1 \u2013 Cost Estimation",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "What is the purpose of a project budget? To ______.",
+      "options": {
+        "A": "track employee performance",
+        "B": "determine the maximum allowable project costs",
+        "C": "eliminate unexpected costs",
+        "D": "ensure unlimited funding"
+      },
+      "correctAnswer": "B",
+      "explanation": "A budget sets the approved cost ceiling for executing the project.",
+      "reference": "Unit 2, Session 3 \u2013 Cost Budgeting",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "What is the main objective of cost control in a project? To ______.",
+      "options": {
+        "A": "increase project costs",
+        "B": "ensure the project stays within the approved budget",
+        "C": "eliminate all project risks",
+        "D": "avoid stakeholder involvement"
+      },
+      "correctAnswer": "B",
+      "explanation": "Cost control monitors spending so the project does not exceed the approved budget baseline.",
+      "reference": "Unit 2, Session 3 \u2013 Cost Control",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Which of the following best describes a fixed cost in project management? A ______.",
+      "options": {
+        "A": "cost that remains unchanged regardless of project activity level",
+        "B": "cost that varies with production output",
+        "C": "cost incurred only at project completion",
+        "D": "cost that cannot be tracked"
+      },
+      "correctAnswer": "A",
+      "explanation": "Fixed costs do not change with the volume of project work (e.g. rent, insurance).",
+      "reference": "Unit 2, Session 2 \u2013 Fixed and Variable Costs",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "The total cost of a project includes ______ costs.",
+      "options": {
+        "A": "only direct",
+        "B": "only indirect",
+        "C": "both direct and indirect",
+        "D": "only fixed"
+      },
+      "correctAnswer": "C",
+      "explanation": "Project cost is made up of: Direct costs (labour, materials) Indirect/overhead costs (insurance, utilities, admin).",
+      "reference": "Unit 2, Session 2 \u2013 Project Cost Classification",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "A cost overrun in a project occurs when, the ______.",
+      "options": {
+        "A": "project is completed under budget",
+        "B": "project exceeds the allocated budget",
+        "C": "cost baseline is revised",
+        "D": "project scope decreases"
+      },
+      "correctAnswer": "B",
+      "explanation": "A cost overrun happens when actual cost is greater than planned cost.",
+      "reference": "Unit 2, Session 3 \u2013 Cost Overruns",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Direct costs are expenses that cannot be traced directly to a specific project activity.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "A",
+      "explanation": "Direct costs can be traced directly to activities (labour, materials). Indirect costs cannot.",
+      "reference": "Unit 2, Session 2 \u2013 Direct and Indirect Costs",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Cost variance (CV) is the difference between the planned cost and the actual cost of work performed.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "B",
+      "explanation": "CV = Planned (or Earned) Cost \u2212 Actual Cost, used to measure cost performance.",
+      "reference": "Unit 2, Session 3 \u2013 Cost Variance Analysis",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "Fixed costs change as the level of project work increases or decreases.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "A",
+      "explanation": "Fixed costs remain constant regardless of workload; only variable costs change.",
+      "reference": "Unit 2, Session 2 \u2013 Fixed vs Variable Costs",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "If a project exceeds its budget, the best solution is to immediately reduce the project scope.",
+      "options": {
+        "A": "False",
+        "B": "True"
+      },
+      "correctAnswer": "A",
+      "explanation": "Budget problems require analysis, re-estimation and control, not automatic scope cutting which may damage objectives.",
+      "reference": "Unit 2, Session 3 \u2013 Cost Control and Corrective Actions",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "If a supplier fails to deliver materials on time, causing a delay, this is an example of ______ delay.",
+      "options": {
+        "A": "internal",
+        "B": "external",
+        "C": "managerial",
+        "D": "avoidable"
+      },
+      "correctAnswer": "B",
+      "explanation": "Supplier-related delays originate outside the project organisation, making them external delays.",
+      "reference": "Unit 3, Session 5 \u2013 Causes of Project Delays",
+      "year": "Semester I Quiz I, 2024/2025"
+    },
+    {
+      "question": "A project schedule should be monitored and controlled using _______.",
+      "options": {
+        "A": "budget allocation",
+        "B": "project timeline reviews and performance tracking",
+        "C": "stakeholder opinions only",
+        "D": "delaying tasks intentionally to create flexibility"
+      },
+      "correctAnswer": "B",
+      "explanation": "Schedule control uses progress reviews, timelines, and performance measurement to keep work on track.",
+      "reference": "Unit 3, Session 4 \u2013 Schedule Monitoring and Control",
+      "year": "Semester I Quiz I, 2024/2025"
+    }
+  ]
+};
+
+
+const app = {
+    currentSubject: null,
+    mode: null,
+    currentPool: [],
+    currentIdx: 0,
+    answers: [],
+    score: 0,
+    timer: null,
+    timeRemaining: 0,
+    selectedYear: 'all',
+
+    selectSubject(subject) {
+        this.currentSubject = subject;
+        this.switchView('menu-view');
+        
+        if (subject === 'entrepreneurship') {
+            document.getElementById('subject-title').innerText = 'Entrepreneurship';
+            document.getElementById('subject-subtitle').innerText = '2019 - 2025 Past Questions';
+            this.populateYearSelect([
+                'Semester I Quiz I, 2019/2020',
+                'Semester I Quiz I, 2020/2021',
+                'Semester II Quiz I, 2020/2021',
+                'Semester I Quiz I, 2021/2022',
+                'Semester II Quiz I, 2021/2022',
+                'Semester I Quiz I, 2022/2023',
+                'Semester II Quiz I, 2022/2023',
+                'Semester I Quiz I, 2023/2024',
+                'Semester I Quiz I, 2024/2025'
+            ]);
+        } else {
+            document.getElementById('subject-title').innerText = 'Project Management';
+            document.getElementById('subject-subtitle').innerText = '2019 - 2025 Question Bank';
+            this.populateYearSelect([
+                'Semester I Quiz I, 2019/2020',
+                'Semester I Quiz I, 2020/2021',
+                'Semester I Quiz I, 2021/2022',
+                'Semester I Quiz I, 2022/2023',
+                'Semester I Quiz I, 2023/2024',
+                'Semester I Quiz I, 2024/2025'
+            ]);
+        }
+        
+        document.getElementById('back-btn').classList.remove('hidden');
+    },
+
+    populateYearSelect(years) {
+        const select = document.getElementById('year-select');
+        select.innerHTML = '<option value="all">All Years (Mixed)</option>';
+        years.forEach(year => {
+            const option = document.createElement('option');
+            option.value = year;
+            option.text = year;
+            select.appendChild(option);
+        });
+    },
+
+    init(mode) {
+        this.mode = mode;
+        this.currentIdx = 0;
+        this.selectedYear = document.getElementById('year-select').value;
+        
+        const questionBank = this.currentSubject === 'entrepreneurship' 
+            ? entrepreneurshipQuestions 
+            : projectManagementQuestions;
+        
+        // Get questions based on year selection
+        let allQuestions = [];
+        if (this.selectedYear === 'all') {
+            // Combine all years
+            for (let year in questionBank) {
+                allQuestions = allQuestions.concat(questionBank[year]);
+            }
+        } else {
+            // Use specific year
+            allQuestions = questionBank[this.selectedYear] || [];
+        }
+        
+        if (allQuestions.length === 0) {
+            alert("No questions available for the selected year.");
+            return;
+        }
+        
+        // For practice mode: randomize and take 10 questions
+        // For exam mode: take 20 questions in sequence or randomize if "all years"
+        if (mode === 'practice') {
+            // Shuffle and take 10
+            allQuestions = this.shuffle(allQuestions);
+            // Remove duplicates if mixing years
+            if (this.selectedYear === 'all') {
+                allQuestions = this.removeDuplicates(allQuestions);
+            }
+            this.currentPool = allQuestions.slice(0, Math.min(10, allQuestions.length));
+            this.timeRemaining = 10 * 60;
+        } else {
+            // Exam mode
+            if (this.selectedYear === 'all') {
+                // Randomize for mixed years
+                allQuestions = this.shuffle(allQuestions);
+                // Remove duplicates
+                allQuestions = this.removeDuplicates(allQuestions);
+            }
+            // Take 20 questions
+            this.currentPool = allQuestions.slice(0, Math.min(20, allQuestions.length));
+            this.timeRemaining = 30 * 60;
+        }
+        
+        this.answers = new Array(this.currentPool.length).fill(null);
+        this.score = 0;
+        
+        this.switchView('quiz-view');
+        this.renderQuestion();
+        this.startTimer();
+        document.getElementById('quit-btn').style.display = 'block';
+    },
+
+    shuffle(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    },
+
+    removeDuplicates(questions) {
+        const seen = new Set();
+        const unique = [];
+        for (let q of questions) {
+            const key = q.question.trim().toLowerCase();
+            if (!seen.has(key)) {
+                seen.add(key);
+                unique.push(q);
+            }
+        }
+        return unique;
+    },
+
+    startTimer() {
+        clearInterval(this.timer);
+        this.timer = setInterval(() => {
+            this.timeRemaining--;
+            const mins = Math.floor(this.timeRemaining / 60);
+            const secs = this.timeRemaining % 60;
+            document.getElementById('timer-display').innerText = 
+                `⏱ ${mins}:${secs.toString().padStart(2, '0')}`;
+            
+            if (this.timeRemaining <= 0) {
+                clearInterval(this.timer);
+                alert("Time's up!");
+                this.finish();
+            }
+        }, 1000);
+    },
+
+    renderQuestion() {
+        const q = this.currentPool[this.currentIdx];
+        const isEntrepreneurship = this.currentSubject === 'entrepreneurship';
+        
+        document.getElementById('progress-text').innerText = 
+            `Question ${this.currentIdx + 1} of ${this.currentPool.length}`;
+        
+        const yearLabel = isEntrepreneurship ? q.academicYear : q.year;
+        document.getElementById('year-tag').innerText = yearLabel;
+        
+        document.getElementById('question-text').innerText = q.question;
+        
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+        
+        const letters = ['A', 'B', 'C', 'D'];
+        const options = isEntrepreneurship ? q.options : Object.values(q.options);
+        
+        options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `<strong>${letters[idx]}</strong>: ${opt}`;
+            btn.onclick = () => this.selectOption(letters[idx], btn);
+            
+            if (this.answers[this.currentIdx] === letters[idx]) {
+                btn.classList.add('selected');
+            }
+            
+            container.appendChild(btn);
+        });
+        
+        document.getElementById('feedback-box').classList.add('hidden');
+        
+        const actionBtn = document.getElementById('action-btn');
+        if (this.currentIdx === this.currentPool.length - 1) {
+            actionBtn.innerText = 'Finish Quiz';
+        } else {
+            actionBtn.innerText = 'Next Question';
+        }
+    },
+
+    selectOption(key, btn) {
+        if (this.mode === 'practice' && this.answers[this.currentIdx]) return;
+        
+        this.answers[this.currentIdx] = key;
+        const q = this.currentPool[this.currentIdx];
+        
+        document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        
+        if (this.mode === 'practice') {
+            const isCorrect = key === q.correctAnswer;
+            btn.classList.add(isCorrect ? 'correct' : 'wrong');
+            
+            document.getElementById('feedback-box').classList.remove('hidden');
+            document.getElementById('feedback-status').innerText = 
+                isCorrect ? "✅ Correct" : `❌ Incorrect (Ans: ${q.correctAnswer})`;
+            
+            const isEntrepreneurship = this.currentSubject === 'entrepreneurship';
+            document.getElementById('feedback-why').innerText = 
+                isEntrepreneurship ? q.why : q.explanation;
+            document.getElementById('feedback-ref').innerText = `Ref: ${q.reference}`;
+        }
+    },
+
+    handleAction() {
+        if (!this.answers[this.currentIdx]) return alert("Please select an answer.");
+        
+        if (this.currentIdx < this.currentPool.length - 1) {
+            this.currentIdx++;
+            this.renderQuestion();
+        } else {
+            this.finish();
+        }
+    },
+
+    confirmQuit() {
+        const answeredCount = this.answers.filter(a => a !== null).length;
+        const totalQuestions = this.currentPool.length;
+        const message = `Are you sure you want to exit the quiz?\n\nProgress: ${answeredCount}/${totalQuestions} questions answered\n\nYour progress will be saved and you can review your answers.`;
+        
+        if (confirm(message)) {
+            this.finish();
+        }
+    },
+
+    finish() {
+        clearInterval(this.timer);
+        document.getElementById('quit-btn').style.display = 'none';
+        
+        const answeredCount = this.answers.filter(a => a !== null).length;
+        this.score = this.currentPool.reduce((total, q, i) => 
+            total + (this.answers[i] === q.correctAnswer ? 1 : 0), 0);
+        
+        this.switchView('results-view');
+        document.getElementById('timer-display').innerText = '';
+        document.getElementById('final-score').innerText = `${this.score} / ${answeredCount}`;
+        
+        const pct = answeredCount > 0 ? (this.score / answeredCount) * 100 : 0;
+        let comment = '';
+        if (answeredCount < this.currentPool.length) {
+            comment = `You answered ${answeredCount} out of ${this.currentPool.length} questions. `;
+        }
+        comment += pct >= 50 ? "Great job!" : "Keep practicing!";
+        document.getElementById('final-comment').innerText = comment;
+    },
+
+    showReview() {
+        this.switchView('review-view');
+        
+        const correctCount = this.currentPool.reduce((total, q, i) => 
+            total + (this.answers[i] === q.correctAnswer ? 1 : 0), 0);
+        const answeredCount = this.answers.filter(a => a !== null).length;
+        const incorrectCount = answeredCount - correctCount;
+        
+        document.getElementById('review-score').innerText = `${this.score} / ${answeredCount}`;
+        document.getElementById('review-correct').innerText = correctCount;
+        document.getElementById('review-incorrect').innerText = incorrectCount;
+        
+        const container = document.getElementById('review-container');
+        container.innerHTML = '';
+        
+        const letters = ['A', 'B', 'C', 'D'];
+        const isEntrepreneurship = this.currentSubject === 'entrepreneurship';
+        
+        this.currentPool.forEach((q, idx) => {
+            const userAnswer = this.answers[idx];
+            const isCorrect = userAnswer === q.correctAnswer;
+            const wasAnswered = userAnswer !== null;
+            
+            const reviewCard = document.createElement('div');
+            reviewCard.className = 'card review-item';
+            
+            const yearLabel = isEntrepreneurship ? q.academicYear : q.year;
+            const explanation = isEntrepreneurship ? q.why : q.explanation;
+            
+            reviewCard.innerHTML = `
+                <div class="review-header">
+                    <span><strong>Question ${idx + 1}</strong> <small style="color: #666;">(${yearLabel})</small></span>
+                    <span class="review-status ${isCorrect ? 'correct' : 'incorrect'}">
+                        ${wasAnswered ? (isCorrect ? '✓ Correct' : '✗ Incorrect') : '⊘ Not Answered'}
+                    </span>
+                </div>
+                <p style="margin-bottom: 1rem; font-weight: 500;">${q.question}</p>
+                <div id="review-options-${idx}"></div>
+                <div style="margin-top: 1rem; padding: 1rem; background: var(--border); border-radius: 8px; border-left: 4px solid var(--primary);">
+                    <strong>Explanation:</strong> ${explanation}<br>
+                    <small style="color: #666; font-style: italic;">Reference: ${q.reference}</small>
+                </div>
+            `;
+            
+            container.appendChild(reviewCard);
+            
+            const optionsContainer = document.getElementById(`review-options-${idx}`);
+            const options = isEntrepreneurship ? q.options : Object.values(q.options);
+            
+            options.forEach((opt, optIdx) => {
+                const optLetter = letters[optIdx];
+                const btn = document.createElement('div');
+                btn.className = 'option-btn';
+                
+                if (optLetter === q.correctAnswer) {
+                    btn.classList.add('review-correct');
+                }
+                if (optLetter === userAnswer && !isCorrect) {
+                    btn.classList.add('review-wrong');
+                }
+                
+                let prefix = '';
+                if (optLetter === q.correctAnswer) {
+                    prefix = '✓ ';
+                }
+                if (optLetter === userAnswer && !isCorrect) {
+                    prefix = '✗ ';
+                }
+                
+                btn.innerHTML = `${prefix}<strong>${optLetter}</strong>: ${opt}`;
+                btn.style.cursor = 'default';
+                optionsContainer.appendChild(btn);
+            });
+        });
+    },
+
+    switchView(viewId) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+    },
+
+    goToDashboard() {
+        this.currentSubject = null;
+        this.mode = null;
+        this.currentPool = [];
+        this.answers = [];
+        clearInterval(this.timer);
+        document.getElementById('timer-display').innerText = '';
+        document.getElementById('back-btn').classList.add('hidden');
+        document.getElementById('quit-btn').style.display = 'none';
+        this.switchView('dashboard-view');
+    },
+
+    toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('darkMode', isDark);
+    }
+};
+
+// Load dark mode preference on page load
+window.addEventListener('DOMContentLoaded', () => {
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    if (darkMode) {
+        document.body.classList.add('dark-mode');
+    }
+});
+</script>
+
+</body>
+</html>
